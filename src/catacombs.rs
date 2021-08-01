@@ -10,26 +10,40 @@ pub struct CatacombNumber {
   is_prime: bool,
 }
 
-/// Compute all of the catacomb numbers for the given input
-pub fn compute_catacombs(mut input: BigUint) -> Vec<CatacombNumber> {
-  let num_bits = input.bits();
+#[allow(unused)]
+impl CatacombNumber {
+  pub fn new(value: impl Into<BigUint>) -> Self {
+    let value: BigUint = value.into();
+    let is_prime = is_prime(&value);
+    Self { value, is_prime }
+  }
 
-  // Toggle the bits one-by-one
-  (0..=num_bits)
-    .into_iter()
-    .map(|bit| {
-      let bit_set = input.bit(bit);
-      input.set_bit(bit, !bit_set);
+  pub fn get_value(&self) -> &BigUint {
+    &self.value
+  }
 
-      let result = CatacombNumber {
-        value: input.clone(),
-        is_prime: is_prime(&input),
-      };
+  pub fn is_prime(&self) -> bool {
+    self.is_prime
+  }
 
-      input.set_bit(bit, bit_set);
-      result
-    })
-    .collect()
+  /// Compute all of the catacomb numbers for the given input
+  pub fn compute_catacombs(mut input: BigUint) -> Vec<CatacombNumber> {
+    let num_bits = input.bits();
+
+    // Toggle the bits one-by-one
+    (0..=num_bits)
+      .into_iter()
+      .map(|bit| {
+        let bit_set = input.bit(bit);
+        input.set_bit(bit, !bit_set);
+
+        let result = CatacombNumber::new(input.clone());
+
+        input.set_bit(bit, bit_set);
+        result
+      })
+      .collect()
+  }
 }
 
 /// Unit testing
@@ -56,7 +70,7 @@ mod test {
     })
     .collect();
 
-    let catacombs = compute_catacombs(number);
+    let catacombs = CatacombNumber::compute_catacombs(number);
     assert_eq!(catacombs.len(), expected.len());
 
     for (given, expected) in catacombs.into_iter().zip(expected) {

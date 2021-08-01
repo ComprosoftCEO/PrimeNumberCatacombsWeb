@@ -11,7 +11,7 @@ edition = "2018"
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "0.2.74"
+wasm-bindgen = { version = "0.2.74", features = ["serde-serialize"] }
 lazy_static = "1.4.0"
 rand = "0.8.4"
 getrandom = { version = "0.2", features = ["js"] }
