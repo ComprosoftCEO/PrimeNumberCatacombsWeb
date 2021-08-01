@@ -14,7 +14,7 @@ After cloning the repository, the first step is to compile the Rust code to WebA
 This will put all the compiled WebAssembly and JavaScript code files into the `pkg/` directory.
 
 ```bash
-wasm-pack build --target bundler
+wasm-pack build
 ```
 
 Next, you will need to install all of the necessary dependencies to run the frontend codebase.

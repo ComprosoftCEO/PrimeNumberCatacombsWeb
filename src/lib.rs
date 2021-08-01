@@ -1,6 +1,7 @@
 use wasm_bindgen::prelude::*;
 
-mod miller_rabin;
+mod catacombs;
+mod primality_test;
 
 #[wasm_bindgen]
 extern "C" {
