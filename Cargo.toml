@@ -3,7 +3,8 @@ name = "prime-number-catacombs"
 version = "0.1.0"
 authors = ["Bryan McClain <bamcclain10@gmail.com>"]
 description = "Rust WASM backend to run the Prime Number Catacombs"
-license = "MIT/Apache-2.0"
+license = "GPL-3.0-or-later"
+repository = "https://github.com/ComprosoftCEO/PrimeNumberCatacombsWeb"
 edition = "2018"
 
 [lib]

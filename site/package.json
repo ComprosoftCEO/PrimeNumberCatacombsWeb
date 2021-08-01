@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "serve": "webpack serve",
+    "build": "webpack"
+  },
+  "dependencies": {
+    "prime-number-catacombs": "^0.1.0"
+  },
+  "devDependencies": {
+    "webpack": "^5.47.1",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2"
+  }
+}
