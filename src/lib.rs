@@ -1,5 +1,6 @@
 mod catacombs;
 mod primality_test;
+mod serialize;
 
 use catacombs::CatacombNumber;
 use num::{BigUint, Num};

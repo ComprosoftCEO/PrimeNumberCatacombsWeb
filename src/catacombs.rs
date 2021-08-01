@@ -2,10 +2,12 @@ use num::BigUint;
 use serde::Serialize;
 
 use crate::primality_test::is_prime;
+use crate::serialize::serialize_to_str;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CatacombNumber {
+  #[serde(serialize_with = "serialize_to_str")]
   value: BigUint,
   is_prime: bool,
 }
