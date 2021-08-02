@@ -1,24 +1,87 @@
-import { compute_catacombs } from 'prime-number-catacombs';
-import image from 'assets/catacombs.png';
-import Two from 'two.js';
+import { Game } from 'engine/game';
+import { DEFAULT_ERROR_HANDLER, DEFAULT_PROGRESS_HANDLER } from 'engine/assets';
 import './styles.css';
 
-console.log(compute_catacombs('13333333333'));
-console.log(Two);
+// Textures
+import BrickColor from 'assets/textures/brick-color.jpg';
+import BrickNrm from 'assets/textures/brick-normal.jpg';
+import BrickOcc from 'assets/textures/brick-occ.jpg';
+import DirtColor from 'assets/textures/dirt-color.jpg';
+import DirtNrm from 'assets/textures/dirt-normal.jpg';
+import DirtOcc from 'assets/textures/dirt-occ.jpg';
 
-const elem = document.getElementById('canvas');
-const two: Two = new Two({ fullscreen: true });
-two.appendTo(elem);
+// Objects
 
-const circle = new Two.Circle(200, 0, 15);
-circle.fill = '#FF8000';
+// Images
 
-const texture = new Two.Texture(image);
-const sprite = new Two.Sprite(texture);
-sprite.translation.x = 200;
-two.scene.add(sprite);
-two.scene.add(circle);
+// Sounds
 
-setInterval(() => {
-  two.update();
-}, 1000);
+// Music
+
+// Build the canvas objects
+const gameCanvas = document.createElement('canvas');
+document.body.appendChild(gameCanvas);
+
+const overlayCanvas = document.createElement('canvas');
+overlayCanvas.setAttribute('tabindex', '0');
+overlayCanvas.classList.add('overlay');
+document.body.appendChild(overlayCanvas);
+
+const game = new Game(gameCanvas, overlayCanvas);
+
+// Configure the "loading" text
+overlayCanvas.width = overlayCanvas.clientWidth;
+overlayCanvas.height = overlayCanvas.clientHeight;
+const g2d = overlayCanvas.getContext('2d');
+g2d.font = '12pt sans-serif';
+g2d.fillStyle = 'white';
+g2d.textAlign = 'center';
+g2d.textBaseline = 'middle';
+g2d.fillText('Loading game...', overlayCanvas.width / 2, overlayCanvas.height / 2);
+
+// Show loading progress
+let errorOccured = false;
+game.assets.progressHandler = (input) => {
+  if (!errorOccured) {
+    drawLoadingProgress(g2d, input);
+  }
+  DEFAULT_PROGRESS_HANDLER(input);
+};
+
+// Show an error message
+game.assets.errorHandler = (input) => {
+  errorOccured = true;
+  drawLoadingProgress(g2d, input, 'red');
+  DEFAULT_ERROR_HANDLER(input);
+};
+
+loadAllAssets(game)
+  .then((game) => {
+    console.log(game);
+    // game.start(new TitleArea());
+  })
+  .catch((error) => {
+    console.log('Failed to load assets: ' + error, error.stack);
+  });
+
+/**
+ * Load all of the game assets asynchronously
+ */
+async function loadAllAssets(game: Game): Promise<Game> {
+  await Promise.all([
+    game.assets.loadTexture('BrickColor', BrickColor),
+    game.assets.loadTexture('BrickNormal', BrickNrm),
+    game.assets.loadTexture('BrickOcclusion', BrickOcc),
+    game.assets.loadTexture('DirtColor', DirtColor),
+    game.assets.loadTexture('DirtNormal', DirtNrm),
+    game.assets.loadTexture('DirtOcclusion', DirtOcc),
+  ]);
+
+  return game;
+}
+
+function drawLoadingProgress(g2d: CanvasRenderingContext2D, text: string, color = 'white'): void {
+  g2d.clearRect(0, (5 * overlayCanvas.height) / 8, overlayCanvas.width, (7 * overlayCanvas.height) / 8);
+  g2d.fillStyle = color;
+  g2d.fillText(text, overlayCanvas.width / 2, (3 * overlayCanvas.height) / 4);
+}

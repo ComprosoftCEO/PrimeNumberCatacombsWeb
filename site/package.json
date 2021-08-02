@@ -36,8 +36,10 @@
     "webpack-dev-server": "^3.11.2"
   },
   "dependencies": {
-    "prime-number-catacombs": "^0.1.0",
+    "@types/three": "^0.130.1",
     "crypto-browserify": "^3.12.0",
-    "two.js": "^0.7.5"
+    "prettysize": "^2.0.0",
+    "prime-number-catacombs": "^0.1.0",
+    "three": "^0.131.1"
   }
 }
