@@ -135,6 +135,16 @@ export class AssetsManager {
   }
 
   /**
+   * Test if a given texture exists in the list of assets
+   *
+   * @param name Name of the texture to test
+   * @return True if the texture exists, false otherwise
+   */
+  public hasTexture(name: string): boolean {
+    return typeof this.textures[name] !== 'undefined';
+  }
+
+  /**
    * Load sound from an audio file
    * Replaces any existing loaded audio with the same name.
    *
@@ -196,7 +206,7 @@ export class AssetsManager {
       .then((image: HTMLImageElement) => {
         this.images[name] = image;
       })
-      .catch(this.onError('audio', name, file));
+      .catch(this.onError('image', name, file));
   }
 
   /**

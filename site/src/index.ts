@@ -1,5 +1,6 @@
 import { Game } from 'engine/game';
 import { DEFAULT_ERROR_HANDLER, DEFAULT_PROGRESS_HANDLER } from 'engine/assets';
+import { MainArea } from 'areas/MainArea';
 import './styles.css';
 
 // Textures
@@ -11,6 +12,7 @@ import DirtNrm from 'assets/textures/dirt-normal.jpg';
 import DirtOcc from 'assets/textures/dirt-occ.jpg';
 
 // Objects
+import Arch from 'assets/objects/Arch.glb';
 
 // Images
 
@@ -57,8 +59,7 @@ game.assets.errorHandler = (input) => {
 
 loadAllAssets(game)
   .then((game) => {
-    console.log(game);
-    // game.start(new TitleArea());
+    game.start(new MainArea([]));
   })
   .catch((error) => {
     console.log('Failed to load assets: ' + error, error.stack);
@@ -69,12 +70,16 @@ loadAllAssets(game)
  */
 async function loadAllAssets(game: Game): Promise<Game> {
   await Promise.all([
-    game.assets.loadTexture('BrickColor', BrickColor),
-    game.assets.loadTexture('BrickNormal', BrickNrm),
-    game.assets.loadTexture('BrickOcclusion', BrickOcc),
+    game.assets.loadImage('BrickColor', BrickColor),
+    game.assets.loadImage('BrickNormal', BrickNrm),
+    game.assets.loadImage('BrickOcclusion', BrickOcc),
     game.assets.loadTexture('DirtColor', DirtColor),
     game.assets.loadTexture('DirtNormal', DirtNrm),
     game.assets.loadTexture('DirtOcclusion', DirtOcc),
+
+    game.assets.loadGLTFFile(Arch, (gltf, manager) => {
+      manager.saveObject('Arch', gltf.scene.children[0]);
+    }),
   ]);
 
   return game;
