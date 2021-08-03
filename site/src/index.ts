@@ -7,6 +7,9 @@ import './styles.css';
 import BrickColor from 'assets/textures/brick-color.jpg';
 import BrickNrm from 'assets/textures/brick-normal.jpg';
 import BrickOcc from 'assets/textures/brick-occ.jpg';
+import ArchBrickColor from 'assets/textures/arch-bricks-color.jpg';
+import ArchBrickNrm from 'assets/textures/arch-bricks-normal.jpg';
+import ArchBrickOcc from 'assets/textures/arch-bricks-occ.jpg';
 import DirtColor from 'assets/textures/dirt-color.jpg';
 import DirtNrm from 'assets/textures/dirt-normal.jpg';
 import DirtOcc from 'assets/textures/dirt-occ.jpg';
@@ -73,6 +76,9 @@ async function loadAllAssets(game: Game): Promise<Game> {
     game.assets.loadImage('BrickColor', BrickColor),
     game.assets.loadImage('BrickNormal', BrickNrm),
     game.assets.loadImage('BrickOcclusion', BrickOcc),
+    game.assets.loadImage('ArchBrickColor', ArchBrickColor),
+    game.assets.loadImage('ArchBrickNormal', ArchBrickNrm),
+    game.assets.loadImage('ArchBrickOcclusion', ArchBrickOcc),
     game.assets.loadTexture('DirtColor', DirtColor),
     game.assets.loadTexture('DirtNormal', DirtNrm),
     game.assets.loadTexture('DirtOcclusion', DirtOcc),

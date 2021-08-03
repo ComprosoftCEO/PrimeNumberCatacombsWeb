@@ -13,7 +13,9 @@ const WALL_SCALE = 8;
 //    [Side][Center][Side]
 //
 const HEIGHT = 18;
-const UNITS_WIDE = 8; /* Whole Number */
+const UNITS_WIDE = 6; /* Whole Number */
+const WALL_DEPTH = 1;
+const INSIDE_DEPTH = 1000;
 
 // These values are computed from the geometry
 const ARCH_HEIGHT = 8.5;
@@ -30,6 +32,8 @@ const TOP_BOX_MATERIAL = new THREE.MeshStandardMaterial();
 const LEFT_MINI_MATERIAL = new THREE.MeshStandardMaterial();
 const RIGHT_MINI_MATERIAL = new THREE.MeshStandardMaterial();
 const ARCH_MATERIAL = new THREE.MeshStandardMaterial();
+const INSIDE_SIDE_MATERIAL = new THREE.MeshStandardMaterial();
+const INSIDE_TOP_MATERIAL = new THREE.MeshStandardMaterial();
 
 /**
  * Represents a wall that can be entered in the maze
@@ -49,8 +53,8 @@ export class MazeWall implements EntityState {
     LEFT_SIDE_MATERIAL.aoMap = this.buildLeftSideTexture('BrickOcclusion');
 
     const leftCube = new THREE.Mesh(BOX_GEOMETRY, LEFT_SIDE_MATERIAL);
-    leftCube.scale.set(1, HEIGHT, SIDE_WIDTH);
-    leftCube.position.set(-0.5, HEIGHT / 2, SIDE_WIDTH / 2 + ARCH_WIDTH / 2);
+    leftCube.scale.set(WALL_DEPTH, HEIGHT, SIDE_WIDTH);
+    leftCube.position.set(-WALL_DEPTH / 2, HEIGHT / 2, SIDE_WIDTH / 2 + ARCH_WIDTH / 2);
     this.entity.object.add(leftCube);
 
     // Right Wall
@@ -59,8 +63,8 @@ export class MazeWall implements EntityState {
     RIGHT_SIDE_MATERIAL.aoMap = this.buildRightSideTexture('BrickOcclusion');
 
     const rightCube = new THREE.Mesh(BOX_GEOMETRY, RIGHT_SIDE_MATERIAL);
-    rightCube.scale.set(1, HEIGHT, SIDE_WIDTH);
-    rightCube.position.set(-0.5, HEIGHT / 2, -SIDE_WIDTH / 2 - ARCH_WIDTH / 2);
+    rightCube.scale.set(WALL_DEPTH, HEIGHT, SIDE_WIDTH);
+    rightCube.position.set(-WALL_DEPTH / 2, HEIGHT / 2, -SIDE_WIDTH / 2 - ARCH_WIDTH / 2);
     this.entity.object.add(rightCube);
 
     // Top of the arch
@@ -69,8 +73,8 @@ export class MazeWall implements EntityState {
     TOP_BOX_MATERIAL.aoMap = this.buildTopTexture('BrickOcclusion');
 
     const topCube = new THREE.Mesh(BOX_GEOMETRY, TOP_BOX_MATERIAL);
-    topCube.scale.set(1, HEIGHT - ARCH_HEIGHT, ARCH_WIDTH);
-    topCube.position.set(-0.5, ARCH_HEIGHT + (HEIGHT - ARCH_HEIGHT) / 2, 0);
+    topCube.scale.set(WALL_DEPTH, HEIGHT - ARCH_HEIGHT, ARCH_WIDTH);
+    topCube.position.set(-WALL_DEPTH / 2, ARCH_HEIGHT + (HEIGHT - ARCH_HEIGHT) / 2, 0);
     this.entity.object.add(topCube);
 
     // Left mini cube
@@ -79,8 +83,8 @@ export class MazeWall implements EntityState {
     LEFT_MINI_MATERIAL.aoMap = this.buildLeftMiniTexture('BrickOcclusion');
 
     const leftMiniCube = new THREE.Mesh(BOX_GEOMETRY, LEFT_MINI_MATERIAL);
-    leftMiniCube.scale.set(1, MINI_HEIGHT, MINI_WIDTH);
-    leftMiniCube.position.set(-0.5, ARCH_HEIGHT - MINI_HEIGHT / 2, (ARCH_WIDTH - MINI_WIDTH) / 2);
+    leftMiniCube.scale.set(WALL_DEPTH, MINI_HEIGHT, MINI_WIDTH);
+    leftMiniCube.position.set(-WALL_DEPTH / 2, ARCH_HEIGHT - MINI_HEIGHT / 2, (ARCH_WIDTH - MINI_WIDTH) / 2);
     this.entity.object.add(leftMiniCube);
 
     // Right mini cube
@@ -89,14 +93,14 @@ export class MazeWall implements EntityState {
     RIGHT_MINI_MATERIAL.aoMap = this.buildRightMiniTexture('BrickOcclusion');
 
     const rightMiniCube = new THREE.Mesh(BOX_GEOMETRY, RIGHT_MINI_MATERIAL);
-    rightMiniCube.scale.set(1, MINI_HEIGHT, MINI_WIDTH);
-    rightMiniCube.position.set(-0.5, ARCH_HEIGHT - MINI_HEIGHT / 2, (-ARCH_WIDTH + MINI_WIDTH) / 2);
+    rightMiniCube.scale.set(WALL_DEPTH, MINI_HEIGHT, MINI_WIDTH);
+    rightMiniCube.position.set(-WALL_DEPTH / 2, ARCH_HEIGHT - MINI_HEIGHT / 2, (-ARCH_WIDTH + MINI_WIDTH) / 2);
     this.entity.object.add(rightMiniCube);
 
     // The arch iteself
-    ARCH_MATERIAL.map = this.buildArchTexture('BrickColor');
-    ARCH_MATERIAL.normalMap = this.buildArchTexture('BrickNormal');
-    ARCH_MATERIAL.aoMap = this.buildArchTexture('BrickOcclusion');
+    ARCH_MATERIAL.map = this.buildArchTexture('ArchBrickColor');
+    ARCH_MATERIAL.normalMap = this.buildArchTexture('ArchBrickNormal');
+    ARCH_MATERIAL.aoMap = this.buildArchTexture('ArchBrickOcclusion');
 
     const arch: THREE.Mesh = this.entity.area.game.assets.getObject('Arch').clone(false) as THREE.Mesh;
     const leftPillar: THREE.Mesh = arch.children[0] as THREE.Mesh;
@@ -104,9 +108,33 @@ export class MazeWall implements EntityState {
     arch.material = ARCH_MATERIAL;
     leftPillar.material = ARCH_MATERIAL;
     rightPillar.material = ARCH_MATERIAL;
-    arch.scale.set(2, 0.5, 0.5);
+    arch.scale.set(WALL_DEPTH * 2, 0.5, 0.5);
     arch.position.set(0, 5.8, 0);
     this.entity.object.add(arch);
+
+    // Sides of the tunnel inside of the arch
+    INSIDE_SIDE_MATERIAL.map = this.buildInsideSideTexture('BrickColor');
+    INSIDE_SIDE_MATERIAL.normalMap = this.buildInsideSideTexture('BrickNormal');
+    INSIDE_SIDE_MATERIAL.aoMap = this.buildInsideSideTexture('BrickOcclusion');
+
+    const leftInsideWall: THREE.Mesh = new THREE.Mesh(BOX_GEOMETRY, INSIDE_SIDE_MATERIAL);
+    leftInsideWall.scale.set(INSIDE_DEPTH, ARCH_HEIGHT, WALL_DEPTH);
+    leftInsideWall.position.set(-WALL_DEPTH / 2 - INSIDE_DEPTH / 2, ARCH_HEIGHT / 2, ARCH_WIDTH / 2 + WALL_DEPTH / 2);
+    this.entity.object.add(leftInsideWall);
+
+    const rightInsideWall: THREE.Mesh = new THREE.Mesh(BOX_GEOMETRY, INSIDE_SIDE_MATERIAL);
+    rightInsideWall.scale.set(INSIDE_DEPTH, ARCH_HEIGHT, WALL_DEPTH);
+    rightInsideWall.position.set(-WALL_DEPTH / 2 - INSIDE_DEPTH / 2, ARCH_HEIGHT / 2, -ARCH_WIDTH / 2 - WALL_DEPTH / 2);
+    this.entity.object.add(rightInsideWall);
+
+    INSIDE_TOP_MATERIAL.map = this.buildInsideTopTexture('BrickColor');
+    INSIDE_TOP_MATERIAL.normalMap = this.buildInsideTopTexture('BrickNormal');
+    INSIDE_TOP_MATERIAL.aoMap = this.buildInsideTopTexture('BrickOcclusion');
+
+    const topInsideWall: THREE.Mesh = new THREE.Mesh(BOX_GEOMETRY, INSIDE_TOP_MATERIAL);
+    topInsideWall.scale.set(INSIDE_DEPTH, WALL_DEPTH, ARCH_WIDTH);
+    topInsideWall.position.set(-WALL_DEPTH / 2 - INSIDE_DEPTH / 2, ARCH_HEIGHT + WALL_DEPTH / 2, 0);
+    this.entity.object.add(topInsideWall);
   }
 
   private buildLeftSideTexture(name: string): THREE.Texture {
@@ -158,6 +186,20 @@ export class MazeWall implements EntityState {
     return this.dynamicallyBuildTexture(name, 'Arch', {
       repeatX: 3 / 4,
       repeatY: 3 / 4,
+    });
+  }
+
+  private buildInsideSideTexture(name: string): THREE.Texture {
+    return this.dynamicallyBuildTexture(name, 'InsideSide', {
+      repeatX: INSIDE_DEPTH / WALL_SCALE,
+      repeatY: ARCH_HEIGHT / WALL_SCALE,
+    });
+  }
+
+  private buildInsideTopTexture(name: string): THREE.Texture {
+    return this.dynamicallyBuildTexture(name, 'InsideTop', {
+      repeatX: INSIDE_DEPTH / WALL_SCALE,
+      repeatY: ARCH_WIDTH / WALL_SCALE,
     });
   }
 

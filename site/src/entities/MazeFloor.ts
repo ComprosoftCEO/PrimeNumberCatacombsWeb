@@ -35,6 +35,7 @@ export class MazeFloor implements EntityState {
 
     // Build the plane object
     this.entity.object = new THREE.Mesh(PLANE_GEOMETRY, PLANE_MATERIAL);
+    this.entity.object.position.y = 0.01;
     this.entity.object.rotation.x = (3 * Math.PI) / 2;
     this.entity.object.scale.set(this.width, this.width, 1);
     this.entity.object.castShadow = true;
