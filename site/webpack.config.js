@@ -49,6 +49,10 @@ module.exports = {
         test: /\.lvl$/i,
         type: 'asset/source',
       },
+      {
+        test: /\.json$/i,
+        type: 'asset/resource',
+      },
     ],
   },
   optimization: {

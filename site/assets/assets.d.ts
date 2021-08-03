@@ -41,3 +41,9 @@ declare module '*.lvl' {
   const content: string;
   export default content;
 }
+
+// JSON text files
+declare module '*.json' {
+  const content: string;
+  export default content;
+}

@@ -17,7 +17,7 @@ export class MainArea implements AreaState {
 
     // Create the floor
     this.area.createEntity(new MazeFloor(10000));
-    this.area.createEntity(new MazeWall());
+    this.area.createEntity(new MazeWall('0123456789'));
 
     // Build the camera
     this.area.game.input.pointerLockEnabled = false;
@@ -25,7 +25,7 @@ export class MainArea implements AreaState {
     this.area.camera = this.camera;
 
     // Set the camera position in the maze
-    this.camera.position.set(15, 4.3, 0);
+    this.camera.position.set(15, 4.8, 0);
     this.camera.rotateY(Math.PI / 2);
   }
 

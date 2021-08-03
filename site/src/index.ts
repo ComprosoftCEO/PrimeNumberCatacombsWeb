@@ -24,6 +24,9 @@ import WallTorch from 'assets/objects/wall-torch.glb';
 
 // Music
 
+// Fonts
+import NumberFont from 'assets/fonts/SpecialElite_Regular.json';
+
 // Build the canvas objects
 const gameCanvas = document.createElement('canvas');
 document.body.appendChild(gameCanvas);
@@ -90,6 +93,8 @@ async function loadAllAssets(game: Game): Promise<Game> {
     game.assets.loadGLTFFile(WallTorch, (gltf, manager) => {
       manager.saveObject('WallTorch', gltf.scene.children[0].children[0]);
     }),
+
+    game.assets.loadFont('Number', NumberFont),
   ]);
 
   return game;

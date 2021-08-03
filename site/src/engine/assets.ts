@@ -31,6 +31,7 @@ export class AssetsManager {
   private materialLoader: THREE.MaterialLoader;
   private animationLoader: THREE.AnimationLoader;
   private gltfLoader: GLTFLoader;
+  private fontLoader: THREE.FontLoader;
 
   private textures: Record<string, THREE.Texture> = {};
   private sounds: Record<string, AudioBuffer> = {};
@@ -38,6 +39,7 @@ export class AssetsManager {
   private objects: Record<string, THREE.Object3D> = {};
   private materials: Record<string, THREE.Material> = {};
   private animations: Record<string, THREE.AnimationClip> = {};
+  private fonts: Record<string, THREE.Font> = {};
 
   public progressHandler = DEFAULT_PROGRESS_HANDLER;
   public errorHandler = DEFAULT_ERROR_HANDLER;
@@ -54,6 +56,7 @@ export class AssetsManager {
     this.materialLoader = new THREE.MaterialLoader();
     this.animationLoader = new THREE.AnimationLoader();
     this.gltfLoader = new GLTFLoader();
+    this.fontLoader = new THREE.FontLoader();
   }
 
   /**
@@ -191,6 +194,16 @@ export class AssetsManager {
   }
 
   /**
+   * Test if a given audio buffer exists in the list of assets
+   *
+   * @param name Name of the audio buffer to test
+   * @return True if the audio buffer exists, false otherwise
+   */
+  public hasAudio(name: string): boolean {
+    return typeof this.sounds[name] !== 'undefined';
+  }
+
+  /**
    * Load images from a file
    * Replaces any existing loaded image with the same name.
    *
@@ -234,6 +247,16 @@ export class AssetsManager {
     }
 
     return image;
+  }
+
+  /**
+   * Test if a given image exists in the list of assets
+   *
+   * @param name Name of the image to test
+   * @return True if the image exists, false otherwise
+   */
+  public hasImage(name: string): boolean {
+    return typeof this.images[name] !== 'undefined';
   }
 
   /**
@@ -283,6 +306,16 @@ export class AssetsManager {
   }
 
   /**
+   * Test if a given object exists in the list of assets
+   *
+   * @param name Name of the object to test
+   * @return True if the object exists, false otherwise
+   */
+  public hasObject(name: string): boolean {
+    return typeof this.objects[name] !== 'undefined';
+  }
+
+  /**
    * Load a material from a JSON file
    * Replaces any existing loaded material with the same name.
    *
@@ -294,11 +327,11 @@ export class AssetsManager {
    */
   public loadMaterial(name: string, file: string): Promise<void> {
     return this.materialLoader
-      .loadAsync(file, this.onProgress('animation', name, file))
+      .loadAsync(file, this.onProgress('material', name, file))
       .then((material) => {
         this.materials[name] = material;
       })
-      .catch(this.onError('animation', name, file));
+      .catch(this.onError('material', name, file));
   }
 
   /**
@@ -325,6 +358,16 @@ export class AssetsManager {
       throw new Error(`No such loaded material '${name}'`);
     }
     return material;
+  }
+
+  /**
+   * Test if a given material exists in the list of assets
+   *
+   * @param name Name of the material to test
+   * @return True if the material exists, false otherwise
+   */
+  public hasMaterial(name: string): boolean {
+    return typeof this.materials[name] !== 'undefined';
   }
 
   /**
@@ -377,6 +420,16 @@ export class AssetsManager {
   }
 
   /**
+   * Test if a given animation exists the list of assets
+   *
+   * @param name Name of the animation to test
+   * @return True if the animation exists, false otherwise
+   */
+  public hasAnimation(name: string): boolean {
+    return typeof this.animations[name] !== 'undefined';
+  }
+
+  /**
    * Load a GLTF file from a web server.
    *
    * You must provide a custom callback to decide how to handle the loaded object data.
@@ -394,6 +447,63 @@ export class AssetsManager {
       .loadAsync(file, this.onProgress('gltf', null, file))
       .then((gltf) => onLoad(gltf, this))
       .catch(this.onError('gltf', null, file));
+  }
+
+  /**
+   * Load a font from a JSON file
+   * Replaces any existing loaded font with the same name.
+   *
+   * Throws an exception if it fails to load (for whatever reason).
+   *
+   * @param name Name of the font to load
+   * @param file Filepath of the object to load
+   * @returns Promise to wait for asset to finish loading
+   */
+  public loadFont(name: string, file: string): Promise<void> {
+    return this.fontLoader
+      .loadAsync(file, this.onProgress('font', name, file))
+      .then((font) => {
+        console.log(font);
+        this.fonts[name] = font;
+      })
+      .catch(this.onError('font', name, file));
+  }
+
+  /**
+   * Save a font to the list of assets.
+   * Replaces any existing loaded fonts with the same name.
+   *
+   * @param name Name of the font to save
+   * @param font Font to save
+   */
+  public saveFont(name: string, font: THREE.Font): void {
+    this.fonts[name] = font;
+  }
+
+  /**
+   * Get a saved font from the list of assets.
+   * Throws an exception if the font does not exist.
+   *
+   * @param name Name of the font to get
+   * @returns Font
+   */
+  public getFont(name: string): THREE.Font {
+    const font = this.fonts[name];
+    if (typeof font === 'undefined') {
+      throw new Error(`No such loaded font '${name}'`);
+    }
+
+    return font;
+  }
+
+  /**
+   * Test if a given font exists the list of assets
+   *
+   * @param name Name of the font to test
+   * @return True if the font exists, false otherwise
+   */
+  public hasFont(name: string): boolean {
+    return typeof this.fonts[name] !== 'undefined';
   }
 
   /**

@@ -34,6 +34,7 @@ const RIGHT_MINI_MATERIAL = new THREE.MeshStandardMaterial();
 const ARCH_MATERIAL = new THREE.MeshStandardMaterial();
 const INSIDE_SIDE_MATERIAL = new THREE.MeshStandardMaterial();
 const INSIDE_TOP_MATERIAL = new THREE.MeshStandardMaterial();
+const FONT_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x705024 });
 
 /**
  * Represents a wall that can be entered in the maze
@@ -42,6 +43,13 @@ export class MazeWall implements EntityState {
   public readonly tags: string[] = ['wall'];
 
   private entity: Entity<this>;
+
+  private wallText: string;
+  private textGeometry: THREE.TextGeometry;
+
+  constructor(wallText: string) {
+    this.wallText = wallText;
+  }
 
   onCreate(entity: Entity<this>): void {
     this.entity = entity;
@@ -131,6 +139,22 @@ export class MazeWall implements EntityState {
     const rightTorchLight: THREE.Object3D = leftTorchLight.clone();
     rightTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, -3.175);
     this.entity.object.add(rightTorchLight);
+
+    // 3D Text
+    this.textGeometry = new THREE.TextGeometry(this.wallText, {
+      font: this.entity.area.game.assets.getFont('Number'),
+      size: 0.7,
+      height: 1,
+    });
+    this.textGeometry.computeBoundingBox();
+    const boundingBox = this.textGeometry.boundingBox;
+    const textWidth = boundingBox.max.x - boundingBox.min.x;
+    const textHeight = boundingBox.max.y - boundingBox.min.y;
+
+    const textMesh = new THREE.Mesh(this.textGeometry, FONT_MATERIAL);
+    textMesh.rotation.set(0, Math.PI / 2, 0);
+    textMesh.position.set(-0.8, ARCH_HEIGHT + 2 * textHeight, textWidth / 2);
+    this.entity.object.add(textMesh);
   }
 
   private static buildMaterial(
@@ -244,7 +268,9 @@ export class MazeWall implements EntityState {
     return texture;
   }
 
-  onDestroy(): void {}
+  onDestroy(): void {
+    this.textGeometry.dispose();
+  }
 
   onStep(): void {}
 
