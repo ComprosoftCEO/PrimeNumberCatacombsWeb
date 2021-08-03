@@ -17,12 +17,7 @@ export class MainArea implements AreaState {
 
     // Create the floor
     this.area.createEntity(new MazeFloor(10000));
-
     this.area.createEntity(new MazeWall());
-
-    // Add a static light and enable shadows
-    area.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
-    area.game.renderer.shadowMap.enabled = true;
 
     // Build the camera
     this.area.game.input.pointerLockEnabled = false;

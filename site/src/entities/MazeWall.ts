@@ -1,7 +1,7 @@
 import { Entity, EntityState } from 'engine/entity';
 import * as THREE from 'three';
 
-// How many tiles should one wall texture take up?
+// How many units should one wall texture take up?
 const WALL_SCALE = 8;
 
 // Configure the size of a wall segment
@@ -15,11 +15,11 @@ const WALL_SCALE = 8;
 const HEIGHT = 18;
 const UNITS_WIDE = 6; /* Whole Number */
 const WALL_DEPTH = 1;
-const INSIDE_DEPTH = 1000;
+const INSIDE_DEPTH = 10;
 
 // These values are computed from the geometry
 const ARCH_HEIGHT = 8.5;
-const ARCH_WIDTH = 7;
+const ARCH_WIDTH = 6.5;
 const MINI_WIDTH = 1;
 const MINI_HEIGHT = 1;
 const SIDE_WIDTH = (UNITS_WIDE * WALL_SCALE - ARCH_WIDTH) / 2;
@@ -47,20 +47,21 @@ export class MazeWall implements EntityState {
     this.entity = entity;
     this.entity.object = new THREE.Group();
 
-    // Left Wall
-    LEFT_SIDE_MATERIAL.map = this.buildLeftSideTexture('BrickColor');
-    LEFT_SIDE_MATERIAL.normalMap = this.buildLeftSideTexture('BrickNormal');
-    LEFT_SIDE_MATERIAL.aoMap = this.buildLeftSideTexture('BrickOcclusion');
+    // Build all of the materials for the walls
+    MazeWall.buildMaterial(LEFT_SIDE_MATERIAL, 'Brick', this.buildLeftSideTexture.bind(this));
+    MazeWall.buildMaterial(RIGHT_SIDE_MATERIAL, 'Brick', this.buildRightSideTexture.bind(this));
+    MazeWall.buildMaterial(TOP_BOX_MATERIAL, 'Brick', this.buildTopTexture.bind(this));
+    MazeWall.buildMaterial(LEFT_MINI_MATERIAL, 'Brick', this.buildLeftMiniTexture.bind(this));
+    MazeWall.buildMaterial(RIGHT_MINI_MATERIAL, 'Brick', this.buildRightMiniTexture.bind(this));
+    MazeWall.buildMaterial(ARCH_MATERIAL, 'ArchBrick', this.buildArchTexture.bind(this));
+    MazeWall.buildMaterial(INSIDE_SIDE_MATERIAL, 'Brick', this.buildInsideSideTexture.bind(this));
+    MazeWall.buildMaterial(INSIDE_TOP_MATERIAL, 'Brick', this.buildInsideTopTexture.bind(this));
 
+    // Outside walls
     const leftCube = new THREE.Mesh(BOX_GEOMETRY, LEFT_SIDE_MATERIAL);
     leftCube.scale.set(WALL_DEPTH, HEIGHT, SIDE_WIDTH);
     leftCube.position.set(-WALL_DEPTH / 2, HEIGHT / 2, SIDE_WIDTH / 2 + ARCH_WIDTH / 2);
     this.entity.object.add(leftCube);
-
-    // Right Wall
-    RIGHT_SIDE_MATERIAL.map = this.buildRightSideTexture('BrickColor');
-    RIGHT_SIDE_MATERIAL.normalMap = this.buildRightSideTexture('BrickNormal');
-    RIGHT_SIDE_MATERIAL.aoMap = this.buildRightSideTexture('BrickOcclusion');
 
     const rightCube = new THREE.Mesh(BOX_GEOMETRY, RIGHT_SIDE_MATERIAL);
     rightCube.scale.set(WALL_DEPTH, HEIGHT, SIDE_WIDTH);
@@ -68,40 +69,23 @@ export class MazeWall implements EntityState {
     this.entity.object.add(rightCube);
 
     // Top of the arch
-    TOP_BOX_MATERIAL.map = this.buildTopTexture('BrickColor');
-    TOP_BOX_MATERIAL.normalMap = this.buildTopTexture('BrickNormal');
-    TOP_BOX_MATERIAL.aoMap = this.buildTopTexture('BrickOcclusion');
-
     const topCube = new THREE.Mesh(BOX_GEOMETRY, TOP_BOX_MATERIAL);
     topCube.scale.set(WALL_DEPTH, HEIGHT - ARCH_HEIGHT, ARCH_WIDTH);
     topCube.position.set(-WALL_DEPTH / 2, ARCH_HEIGHT + (HEIGHT - ARCH_HEIGHT) / 2, 0);
     this.entity.object.add(topCube);
 
-    // Left mini cube
-    LEFT_MINI_MATERIAL.map = this.buildLeftMiniTexture('BrickColor');
-    LEFT_MINI_MATERIAL.normalMap = this.buildLeftMiniTexture('BrickNormal');
-    LEFT_MINI_MATERIAL.aoMap = this.buildLeftMiniTexture('BrickOcclusion');
-
+    // Mini boxes between the sides and top
     const leftMiniCube = new THREE.Mesh(BOX_GEOMETRY, LEFT_MINI_MATERIAL);
     leftMiniCube.scale.set(WALL_DEPTH, MINI_HEIGHT, MINI_WIDTH);
     leftMiniCube.position.set(-WALL_DEPTH / 2, ARCH_HEIGHT - MINI_HEIGHT / 2, (ARCH_WIDTH - MINI_WIDTH) / 2);
     this.entity.object.add(leftMiniCube);
-
-    // Right mini cube
-    RIGHT_MINI_MATERIAL.map = this.buildRightMiniTexture('BrickColor');
-    RIGHT_MINI_MATERIAL.normalMap = this.buildRightMiniTexture('BrickNormal');
-    RIGHT_MINI_MATERIAL.aoMap = this.buildRightMiniTexture('BrickOcclusion');
 
     const rightMiniCube = new THREE.Mesh(BOX_GEOMETRY, RIGHT_MINI_MATERIAL);
     rightMiniCube.scale.set(WALL_DEPTH, MINI_HEIGHT, MINI_WIDTH);
     rightMiniCube.position.set(-WALL_DEPTH / 2, ARCH_HEIGHT - MINI_HEIGHT / 2, (-ARCH_WIDTH + MINI_WIDTH) / 2);
     this.entity.object.add(rightMiniCube);
 
-    // The arch iteself
-    ARCH_MATERIAL.map = this.buildArchTexture('ArchBrickColor');
-    ARCH_MATERIAL.normalMap = this.buildArchTexture('ArchBrickNormal');
-    ARCH_MATERIAL.aoMap = this.buildArchTexture('ArchBrickOcclusion');
-
+    // The arch itself
     const arch: THREE.Mesh = this.entity.area.game.assets.getObject('Arch').clone(false) as THREE.Mesh;
     const leftPillar: THREE.Mesh = arch.children[0] as THREE.Mesh;
     const rightPillar: THREE.Mesh = arch.children[1] as THREE.Mesh;
@@ -112,11 +96,7 @@ export class MazeWall implements EntityState {
     arch.position.set(0, 5.8, 0);
     this.entity.object.add(arch);
 
-    // Sides of the tunnel inside of the arch
-    INSIDE_SIDE_MATERIAL.map = this.buildInsideSideTexture('BrickColor');
-    INSIDE_SIDE_MATERIAL.normalMap = this.buildInsideSideTexture('BrickNormal');
-    INSIDE_SIDE_MATERIAL.aoMap = this.buildInsideSideTexture('BrickOcclusion');
-
+    // Tunnel inside of the arch
     const leftInsideWall: THREE.Mesh = new THREE.Mesh(BOX_GEOMETRY, INSIDE_SIDE_MATERIAL);
     leftInsideWall.scale.set(INSIDE_DEPTH, ARCH_HEIGHT, WALL_DEPTH);
     leftInsideWall.position.set(-WALL_DEPTH / 2 - INSIDE_DEPTH / 2, ARCH_HEIGHT / 2, ARCH_WIDTH / 2 + WALL_DEPTH / 2);
@@ -127,14 +107,40 @@ export class MazeWall implements EntityState {
     rightInsideWall.position.set(-WALL_DEPTH / 2 - INSIDE_DEPTH / 2, ARCH_HEIGHT / 2, -ARCH_WIDTH / 2 - WALL_DEPTH / 2);
     this.entity.object.add(rightInsideWall);
 
-    INSIDE_TOP_MATERIAL.map = this.buildInsideTopTexture('BrickColor');
-    INSIDE_TOP_MATERIAL.normalMap = this.buildInsideTopTexture('BrickNormal');
-    INSIDE_TOP_MATERIAL.aoMap = this.buildInsideTopTexture('BrickOcclusion');
-
     const topInsideWall: THREE.Mesh = new THREE.Mesh(BOX_GEOMETRY, INSIDE_TOP_MATERIAL);
     topInsideWall.scale.set(INSIDE_DEPTH, WALL_DEPTH, ARCH_WIDTH);
     topInsideWall.position.set(-WALL_DEPTH / 2 - INSIDE_DEPTH / 2, ARCH_HEIGHT + WALL_DEPTH / 2, 0);
     this.entity.object.add(topInsideWall);
+
+    // Torches
+    const leftTorch: THREE.Object3D = this.entity.area.game.assets.getObject('WallTorch').clone(false);
+    leftTorch.scale.set(0.5, 1, 0.5);
+    leftTorch.position.set(WALL_DEPTH, 4.4, 3.175);
+    this.entity.object.add(leftTorch);
+
+    const rightTorch: THREE.Object3D = this.entity.area.game.assets.getObject('WallTorch').clone(false);
+    rightTorch.scale.set(0.5, 1, 0.5);
+    rightTorch.position.set(WALL_DEPTH, 4.4, -3.175);
+    this.entity.object.add(rightTorch);
+
+    // Torch Lights
+    const leftTorchLight: THREE.Object3D = new THREE.PointLight(0xffd050, 1, 13, 1);
+    leftTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, 3.175);
+    this.entity.object.add(leftTorchLight);
+
+    const rightTorchLight: THREE.Object3D = leftTorchLight.clone();
+    rightTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, -3.175);
+    this.entity.object.add(rightTorchLight);
+  }
+
+  private static buildMaterial(
+    material: THREE.MeshStandardMaterial,
+    prefix: string,
+    buildTexture: (name: string) => THREE.Texture,
+  ) {
+    material.map = buildTexture(`${prefix}Color`);
+    material.normalMap = buildTexture(`${prefix}Normal`);
+    material.aoMap = buildTexture(`${prefix}Occlusion`);
   }
 
   private buildLeftSideTexture(name: string): THREE.Texture {
@@ -203,8 +209,14 @@ export class MazeWall implements EntityState {
     });
   }
 
+  /**
+   * Create and save a texture inside the resources with the given repeats and offsets
+   *
+   * @param imageName Name of the image to load
+   * @param suffix Suffix to uniquely identify the texture
+   */
   private dynamicallyBuildTexture(
-    name: string,
+    imageName: string,
     suffix: string,
     {
       repeatX,
@@ -214,13 +226,13 @@ export class MazeWall implements EntityState {
     }: { repeatX: number; repeatY: number; offsetX?: number; offsetY?: number },
   ): THREE.Texture {
     const assets = this.entity.area.game.assets;
-    const textureName = `${name}-${suffix}`;
+    const textureName = `${imageName}-${suffix}`;
 
     if (assets.hasTexture(textureName)) {
       return assets.getTexture(textureName);
     }
 
-    const image = assets.getImage(name);
+    const image = assets.getImage(imageName);
     const texture = new THREE.Texture(image);
     texture.needsUpdate = true;
     texture.wrapS = THREE.RepeatWrapping;

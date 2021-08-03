@@ -15,7 +15,8 @@ import DirtNrm from 'assets/textures/dirt-normal.jpg';
 import DirtOcc from 'assets/textures/dirt-occ.jpg';
 
 // Objects
-import Arch from 'assets/objects/Arch.glb';
+import Arch from 'assets/objects/arch.glb';
+import WallTorch from 'assets/objects/wall-torch.glb';
 
 // Images
 
@@ -85,6 +86,9 @@ async function loadAllAssets(game: Game): Promise<Game> {
 
     game.assets.loadGLTFFile(Arch, (gltf, manager) => {
       manager.saveObject('Arch', gltf.scene.children[0]);
+    }),
+    game.assets.loadGLTFFile(WallTorch, (gltf, manager) => {
+      manager.saveObject('WallTorch', gltf.scene.children[0].children[0]);
     }),
   ]);
 
