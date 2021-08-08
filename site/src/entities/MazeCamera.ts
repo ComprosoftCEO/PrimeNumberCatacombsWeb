@@ -2,6 +2,7 @@ import { Entity, EntityState } from 'engine/entity';
 import { Key } from 'engine/input';
 import { TOTAL_WIDTH, INSIDE_DEPTH } from './Constants';
 import { MainArea } from 'areas/MainArea';
+import { DoorSelectorArea } from 'areas/DoorSelectorArea';
 import * as THREE from 'three';
 
 const CAMERA_DIST_OUT = 15;
@@ -66,13 +67,14 @@ export class MazeCamera implements EntityState {
     this.camera.updateProjectionMatrix();
 
     // Handle user input
+    const area: DoorSelectorArea = this.entity.area.state as MainArea;
     const input = this.entity.area.game.input;
     if (!this.isMoving) {
-      if (input.isKeyStarted(Key.Left)) {
+      if (input.isKeyStarted(Key.Left) && this.relativePosition > area.smallestIndex) {
         this.moveLeft();
-      } else if (input.isKeyStarted(Key.Right)) {
+      } else if (input.isKeyStarted(Key.Right) && this.relativePosition < area.largestIndex) {
         this.moveRight();
-      } else if (input.isKeyStarted(Key.Up)) {
+      } else if (input.isKeyStarted(Key.Up) && area.canEnterDoor(this.relativePosition)) {
         this.zoomIn();
       }
     }
@@ -157,7 +159,9 @@ export class MazeCamera implements EntityState {
     if (this.movingTick > ZOOM_SPEED_TICKS) {
       this.movingTick = 0;
       this.entity.clearTimer(Timer.ZoomIn);
-      this.entity.area.game.setArea(new MainArea([]));
+
+      const area: DoorSelectorArea = this.entity.area.state as MainArea;
+      area.enterDoor(this.relativePosition);
     }
   }
 

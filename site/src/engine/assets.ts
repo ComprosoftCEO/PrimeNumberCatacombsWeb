@@ -463,7 +463,6 @@ export class AssetsManager {
     return this.fontLoader
       .loadAsync(file, this.onProgress('font', name, file))
       .then((font) => {
-        console.log(font);
         this.fonts[name] = font;
       })
       .catch(this.onError('font', name, file));

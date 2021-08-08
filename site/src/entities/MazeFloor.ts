@@ -22,7 +22,7 @@ export class MazeFloor implements EntityState {
    * @param unitsPerSide Number of unit collections wide on each side
    */
   constructor(unitsPerSide = 0) {
-    this.width = unitsPerSide * TOTAL_WIDTH + TOTAL_WIDTH;
+    this.width = 2 * unitsPerSide * TOTAL_WIDTH + TOTAL_WIDTH;
   }
 
   onCreate(entity: Entity<this>): void {
