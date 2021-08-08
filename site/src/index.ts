@@ -66,7 +66,7 @@ game.assets.errorHandler = (input) => {
 
 loadAllAssets(game)
   .then((game) => {
-    game.start(new MainArea(['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']));
+    game.start(new MainArea('2'));
   })
   .catch((error) => {
     console.log('Failed to load assets: ' + error, error.stack);

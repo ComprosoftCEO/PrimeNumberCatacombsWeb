@@ -173,7 +173,7 @@ export class MazeWall implements EntityState {
     // 3D Text
     this.textGeometry = new THREE.TextGeometry(this.wallText, {
       font: this.entity.area.game.assets.getFont('Number'),
-      size: 0.7,
+      size: 0.8,
       height: 1,
     });
     this.textGeometry.computeBoundingBox();

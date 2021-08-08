@@ -4,6 +4,12 @@ import { FadeInEffect } from 'entities/FadeInEffect';
 import { MazeCamera } from 'entities/MazeCamera';
 import { MazeFloor } from 'entities/MazeFloor';
 import { MazeWall } from 'entities/MazeWall';
+import { computeCatacombs } from 'prime-number-catacombs';
+
+interface CatacombNumber {
+  value: string;
+  isPrime: boolean;
+}
 
 /**
  * Main area of the game
@@ -13,8 +19,14 @@ export class MainArea implements AreaState, DoorSelectorArea {
 
   private entries: string[];
 
-  constructor(messages: string[]) {
-    this.entries = messages;
+  /**
+   * Construct a new game area
+   *
+   * @param currentNumber Base-10 representation of the prime number
+   */
+  constructor(currentNumber: string) {
+    const catacombNumbers: CatacombNumber[] = computeCatacombs(currentNumber);
+    this.entries = catacombNumbers.filter(({ isPrime }) => isPrime).map(({ value }) => value);
   }
 
   public get smallestIndex(): number {
@@ -51,17 +63,18 @@ export class MainArea implements AreaState, DoorSelectorArea {
   /**
    * Action fired when a door is entered
    */
-  public enterDoor(_index: number): void {
+  public enterDoor(index: number): void {
     // Clear any door resources
     for (const door of this.area.findEntities('wall')) {
       door.destroy();
     }
 
-    this.area.setTimer(0, 1, false);
+    // Hacky: use the timer index to specify the next room to visit
+    this.area.setTimer(index - this.smallestIndex, 1, false);
   }
 
-  onTimer(_timerIndex: number): void {
-    this.area.game.setArea(new MainArea(['-1', '0', '1']));
+  onTimer(timerIndex: number): void {
+    this.area.game.setArea(new MainArea(this.entries[timerIndex]));
   }
 
   onStep(): void {}

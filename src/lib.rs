@@ -15,7 +15,7 @@ extern "C" {
 ///
 /// Returns `CatacombNumber[]` to the frontend
 /// If there is an error, then it returns an empty array
-#[wasm_bindgen]
+#[wasm_bindgen(js_name = computeCatacombs)]
 pub fn compute_catacombs(current_number: &str) -> JsValue {
   let number = BigUint::from_str_radix(current_number, 10).expect("Invalid base-10 number");
   let result = CatacombNumber::compute_catacombs(number);
