@@ -1,17 +1,6 @@
 import { Entity, EntityState } from 'engine/entity';
-import { WALL_SCALE, UNITS_WIDE, TOTAL_WIDTH, INSIDE_DEPTH } from './Constants';
+import { WALL_SCALE, UNITS_WIDE, TOTAL_WIDTH, WALL_HEIGHT, WALL_DEPTH, INSIDE_DEPTH } from './Constants';
 import * as THREE from 'three';
-
-// Configure the size of a wall segment
-//
-//           Height
-//    |    |        |    |
-//    |    |/AHeight|    |
-//    |    ||      ||    |
-//    [Side][Center][Side]
-//
-const HEIGHT = 18;
-const WALL_DEPTH = 1;
 
 // These values are computed from the geometry
 const ARCH_HEIGHT = 8.5;
@@ -44,6 +33,9 @@ export class MazeWall implements EntityState {
   private relativePosition: number;
   private textGeometry: THREE.TextGeometry;
 
+  private leftTorchLight: THREE.PointLight;
+  private rightTorchLight: THREE.PointLight;
+
   constructor(wallText: string, relativePosition = 0) {
     this.wallText = wallText;
     this.relativePosition = relativePosition;
@@ -65,29 +57,29 @@ export class MazeWall implements EntityState {
 
     // Outside walls
     const leftCube = new THREE.Mesh(BOX_GEOMETRY, LEFT_SIDE_MATERIAL);
-    leftCube.scale.set(WALL_DEPTH, HEIGHT, SIDE_WIDTH);
+    leftCube.scale.set(WALL_DEPTH, WALL_HEIGHT, SIDE_WIDTH);
     leftCube.position.set(
       -WALL_DEPTH / 2,
-      HEIGHT / 2,
+      WALL_HEIGHT / 2,
       SIDE_WIDTH / 2 + ARCH_WIDTH / 2 + -this.relativePosition * TOTAL_WIDTH,
     );
     this.entity.object.add(leftCube);
 
     const rightCube = new THREE.Mesh(BOX_GEOMETRY, RIGHT_SIDE_MATERIAL);
-    rightCube.scale.set(WALL_DEPTH, HEIGHT, SIDE_WIDTH);
+    rightCube.scale.set(WALL_DEPTH, WALL_HEIGHT, SIDE_WIDTH);
     rightCube.position.set(
       -WALL_DEPTH / 2,
-      HEIGHT / 2,
+      WALL_HEIGHT / 2,
       -SIDE_WIDTH / 2 - ARCH_WIDTH / 2 + -this.relativePosition * TOTAL_WIDTH,
     );
     this.entity.object.add(rightCube);
 
     // Top of the arch
     const topCube = new THREE.Mesh(BOX_GEOMETRY, TOP_BOX_MATERIAL);
-    topCube.scale.set(WALL_DEPTH, HEIGHT - ARCH_HEIGHT, ARCH_WIDTH);
+    topCube.scale.set(WALL_DEPTH, WALL_HEIGHT - ARCH_HEIGHT, ARCH_WIDTH);
     topCube.position.set(
       -WALL_DEPTH / 2,
-      ARCH_HEIGHT + (HEIGHT - ARCH_HEIGHT) / 2,
+      ARCH_HEIGHT + (WALL_HEIGHT - ARCH_HEIGHT) / 2,
       -this.relativePosition * TOTAL_WIDTH,
     );
     this.entity.object.add(topCube);
@@ -162,12 +154,14 @@ export class MazeWall implements EntityState {
     this.entity.object.add(rightTorch);
 
     // Torch Lights
-    const leftTorchLight: THREE.Object3D = new THREE.PointLight(0xffd050, 1, 13, 1);
+    const leftTorchLight: THREE.PointLight = new THREE.PointLight(0xffd050, 1, 13, 1);
     leftTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, 3.175 + -this.relativePosition * TOTAL_WIDTH);
+    this.leftTorchLight = leftTorchLight;
     this.entity.object.add(leftTorchLight);
 
-    const rightTorchLight: THREE.Object3D = leftTorchLight.clone();
+    const rightTorchLight: THREE.PointLight = leftTorchLight.clone();
     rightTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, -3.175 + -this.relativePosition * TOTAL_WIDTH);
+    this.rightTorchLight = rightTorchLight;
     this.entity.object.add(rightTorchLight);
 
     // 3D Text
@@ -200,27 +194,27 @@ export class MazeWall implements EntityState {
   private buildLeftSideTexture(name: string): THREE.Texture {
     return this.dynamicallyBuildTexture(name, 'LeftSide', {
       repeatX: SIDE_WIDTH / WALL_SCALE,
-      repeatY: HEIGHT / WALL_SCALE,
+      repeatY: WALL_HEIGHT / WALL_SCALE,
       offsetX: 0,
-      offsetY: (HEIGHT / WALL_SCALE) % 1.0,
+      offsetY: (WALL_HEIGHT / WALL_SCALE) % 1.0,
     });
   }
 
   private buildRightSideTexture(name: string): THREE.Texture {
     return this.dynamicallyBuildTexture(name, 'RightSide', {
       repeatX: SIDE_WIDTH / WALL_SCALE,
-      repeatY: HEIGHT / WALL_SCALE,
+      repeatY: WALL_HEIGHT / WALL_SCALE,
       offsetX: ((SIDE_WIDTH + ARCH_WIDTH) / WALL_SCALE) % 1.0,
-      offsetY: (HEIGHT / WALL_SCALE) % 1.0,
+      offsetY: (WALL_HEIGHT / WALL_SCALE) % 1.0,
     });
   }
 
   private buildTopTexture(name: string): THREE.Texture {
     return this.dynamicallyBuildTexture(name, 'Top', {
       repeatX: ARCH_WIDTH / WALL_SCALE,
-      repeatY: (HEIGHT - ARCH_HEIGHT) / WALL_SCALE,
+      repeatY: (WALL_HEIGHT - ARCH_HEIGHT) / WALL_SCALE,
       offsetX: (SIDE_WIDTH / WALL_SCALE) % 1.0,
-      offsetY: ((ARCH_HEIGHT / WALL_SCALE) % 1.0) + ((HEIGHT / WALL_SCALE) % 1.0),
+      offsetY: ((ARCH_HEIGHT / WALL_SCALE) % 1.0) + ((WALL_HEIGHT / WALL_SCALE) % 1.0),
     });
   }
 

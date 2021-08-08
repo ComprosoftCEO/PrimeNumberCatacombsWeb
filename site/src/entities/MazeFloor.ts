@@ -38,8 +38,6 @@ export class MazeFloor implements EntityState {
     this.entity.object.position.y = 0.01;
     this.entity.object.rotation.x = (3 * Math.PI) / 2;
     this.entity.object.scale.set(2 * INSIDE_DEPTH, this.width, 1);
-    this.entity.object.castShadow = true;
-    this.entity.object.receiveShadow = true;
   }
 
   /**

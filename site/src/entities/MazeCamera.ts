@@ -1,11 +1,10 @@
 import { Entity, EntityState } from 'engine/entity';
 import { Key } from 'engine/input';
-import { TOTAL_WIDTH, INSIDE_DEPTH } from './Constants';
+import { TOTAL_WIDTH, INSIDE_DEPTH, CAMERA_DIST_OUT } from './Constants';
 import { MainArea } from 'areas/MainArea';
 import { DoorSelectorArea } from 'areas/DoorSelectorArea';
 import * as THREE from 'three';
 
-const CAMERA_DIST_OUT = 15;
 const MOVEMENT_DELAY_TICKS = 10;
 
 // Speed to move left and right
