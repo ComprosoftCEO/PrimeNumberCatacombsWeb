@@ -5,6 +5,7 @@ import { MazeCamera } from 'entities/MazeCamera';
 import { MazeFloor } from 'entities/MazeFloor';
 import { MazeWall } from 'entities/MazeWall';
 import { computeCatacombs } from 'prime-number-catacombs';
+import { AudioWrapper } from 'engine/audio';
 
 interface CatacombNumber {
   value: string;
@@ -18,6 +19,8 @@ export class MainArea implements AreaState, DoorSelectorArea {
   private area: Area<this>;
 
   private entries: string[];
+
+  private ambient: AudioWrapper;
 
   /**
    * Construct a new game area
@@ -51,6 +54,12 @@ export class MainArea implements AreaState, DoorSelectorArea {
     // Build the camera
     this.area.createEntity(new MazeCamera(0));
     this.area.createEntity(new FadeInEffect());
+
+    // Start the creepy ambient noise
+    this.ambient = this.area.createAudio('Ambient');
+    if (!this.ambient.isPlaying) {
+      this.ambient.play(true);
+    }
   }
 
   /**

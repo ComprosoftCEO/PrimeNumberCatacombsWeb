@@ -23,6 +23,7 @@ import WallTorch from 'assets/objects/wall-torch.glb';
 // Sounds
 
 // Music
+import Ambient from 'assets/music/ambient.ogg';
 
 // Fonts
 import NumberFont from 'assets/fonts/SpecialElite_Regular.json';
@@ -93,6 +94,8 @@ async function loadAllAssets(game: Game): Promise<Game> {
     game.assets.loadGLTFFile(WallTorch, (gltf, manager) => {
       manager.saveObject('WallTorch', gltf.scene.children[0].children[0]);
     }),
+
+    game.assets.loadAudioFile('Ambient', Ambient),
 
     game.assets.loadFont('Number', NumberFont),
   ]);
