@@ -1,9 +1,10 @@
 import { Entity, EntityState } from 'engine/entity';
+import { INSIDE_DEPTH, TOTAL_WIDTH } from './Constants';
 import * as THREE from 'three';
 
 const PLANE_GEOMETRY = new THREE.PlaneGeometry();
 const PLANE_MATERIAL = new THREE.MeshStandardMaterial();
-const FLOOR_SCALE = 1 / 3;
+const FLOOR_SCALE = 6;
 
 /**
  * Represents the floor in the maze
@@ -18,11 +19,10 @@ export class MazeFloor implements EntityState {
   /**
    * Create a new plane for the floor
    *
-   * @param width Number of tiles wide
-   * @param height Number of tiles high
+   * @param unitsPerSide Number of unit collections wide on each side
    */
-  constructor(width: number) {
-    this.width = width;
+  constructor(unitsPerSide = 0) {
+    this.width = unitsPerSide * TOTAL_WIDTH + TOTAL_WIDTH;
   }
 
   onCreate(entity: Entity<this>): void {
@@ -37,7 +37,7 @@ export class MazeFloor implements EntityState {
     this.entity.object = new THREE.Mesh(PLANE_GEOMETRY, PLANE_MATERIAL);
     this.entity.object.position.y = 0.01;
     this.entity.object.rotation.x = (3 * Math.PI) / 2;
-    this.entity.object.scale.set(this.width, this.width, 1);
+    this.entity.object.scale.set(2 * INSIDE_DEPTH, this.width, 1);
     this.entity.object.castShadow = true;
     this.entity.object.receiveShadow = true;
   }
@@ -49,9 +49,8 @@ export class MazeFloor implements EntityState {
     const texture = this.entity.area.game.assets.getTexture(name);
     texture.wrapS = THREE.RepeatWrapping;
     texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set((this.width * FLOOR_SCALE) / 2, (this.width * FLOOR_SCALE) / 2);
+    texture.repeat.set((2 * INSIDE_DEPTH) / FLOOR_SCALE, this.width / FLOOR_SCALE);
     texture.offset.set(0.5, 0.5);
-    texture.rotation = Math.PI / 6;
     return texture;
   }
 

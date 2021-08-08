@@ -1,4 +1,6 @@
 import { Area, AreaState } from 'engine/area';
+import { FadeInEffect } from 'entities/FadeInEffect';
+import { MazeCamera } from 'entities/MazeCamera';
 import { MazeFloor } from 'entities/MazeFloor';
 import { MazeWall } from 'entities/MazeWall';
 import * as THREE from 'three';
@@ -8,7 +10,6 @@ import * as THREE from 'three';
  */
 export class MainArea implements AreaState {
   private area: Area<this>;
-  private camera: THREE.PerspectiveCamera;
 
   constructor(private messages: string[]) {}
 
@@ -16,26 +17,19 @@ export class MainArea implements AreaState {
     this.area = area;
 
     // Create the floor
-    this.area.createEntity(new MazeFloor(10000));
+    this.area.createEntity(new MazeFloor(6));
     this.area.createEntity(new MazeWall('0123456789'));
+    this.area.createEntity(new MazeWall('Left', -1));
+    this.area.createEntity(new MazeWall('Right', +1));
 
     // Build the camera
-    this.area.game.input.pointerLockEnabled = false;
-    this.camera = new THREE.PerspectiveCamera(50, area.game.canvasWidth / area.game.canvasHeight, 0.001, 1000);
-    this.area.camera = this.camera;
-
-    // Set the camera position in the maze
-    this.camera.position.set(15, 4.8, 0);
-    this.camera.rotateY(Math.PI / 2);
+    this.area.createEntity(new MazeCamera(0));
+    this.area.createEntity(new FadeInEffect());
   }
 
   onTimer(_timerIndex: number): void {}
 
-  onStep(): void {
-    // Make sure the camera is scaled properly
-    this.camera.aspect = this.area.game.canvasWidth / this.area.game.canvasHeight;
-    this.camera.updateProjectionMatrix();
-  }
+  onStep(): void {}
 
   onDraw(_g2d: CanvasRenderingContext2D): void {}
 }
