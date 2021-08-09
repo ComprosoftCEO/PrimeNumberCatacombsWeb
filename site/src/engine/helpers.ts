@@ -121,3 +121,14 @@ export function pickClosest(input: number, values: number[]): number {
 
   return closestValue;
 }
+
+/**
+ * Perform a linear interpolation between one and two
+ *
+ * @param one First number
+ * @param two Second number
+ * @param percent Linear interpolation
+ */
+export function lerp(one: number, two: number, percent: number): number {
+  return (1 - percent) * one + two * percent;
+}

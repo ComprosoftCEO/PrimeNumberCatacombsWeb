@@ -36,6 +36,11 @@ declare module '*.mp3' {
   export default content;
 }
 
+declare module '*.ttf' {
+  const content: string;
+  export default content;
+}
+
 // Text level files
 declare module '*.lvl' {
   const content: string;
