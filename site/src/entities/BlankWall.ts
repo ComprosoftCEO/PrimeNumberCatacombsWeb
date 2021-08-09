@@ -1,5 +1,4 @@
 import { Entity, EntityState } from 'engine/entity';
-import { lerp } from 'engine/helpers';
 import { Key } from 'engine/input';
 import { TOTAL_WIDTH, WALL_DEPTH, WALL_HEIGHT, WALL_SCALE } from './Constants';
 import TextTexture from '@seregpie/three.text-texture';
@@ -10,7 +9,8 @@ const PLANE_GEOMETRY = new THREE.PlaneGeometry();
 const BLANK_MATERIAL = new THREE.MeshStandardMaterial();
 
 const CENTER_TEXT_Y = 6.5;
-const TEXTURE_WIDTH = 10;
+const DEFAULT_TEXTURE_WIDTH = 10;
+const NORMAL_SCALE_FACTOR = 2;
 
 /**
  * Blank wall in the maze
@@ -22,15 +22,14 @@ export class BlankWall implements EntityState {
 
   private relativePosition: number;
 
-  private originalCanvas: HTMLCanvasElement;
-  private newCanvas: HTMLCanvasElement;
-  private texture: TextTexture;
   private graffitiPlane: THREE.Mesh;
-  private height = 0;
-  private angle = -Math.PI / 32;
+  private angle = 0;
 
-  private normalCanvas: HTMLCanvasElement;
+  // Internal resources that must be freed:
+  private textTexture: TextTexture;
   private normalTexture: THREE.Texture;
+  private normalCanvas: HTMLCanvasElement;
+  private graffitiMaterial: THREE.MeshStandardMaterial;
 
   constructor(relativePosition = 0) {
     this.relativePosition = relativePosition;
@@ -39,9 +38,10 @@ export class BlankWall implements EntityState {
   onCreate(entity: Entity<this>): void {
     this.entity = entity;
 
-    BLANK_MATERIAL.map = this.buildTexture('BrickColor');
-    BLANK_MATERIAL.normalMap = this.buildTexture('BrickNormal');
-    BLANK_MATERIAL.aoMap = this.buildTexture('BrickOcclusion');
+    // Wall texture
+    BLANK_MATERIAL.map = this.buildWallTexture('BrickColor');
+    BLANK_MATERIAL.normalMap = this.buildWallTexture('BrickNormal');
+    BLANK_MATERIAL.aoMap = this.buildWallTexture('BrickOcclusion');
 
     this.entity.object = new THREE.Group();
 
@@ -52,17 +52,18 @@ export class BlankWall implements EntityState {
     this.entity.object.add(wall);
 
     // Torch
-    const leftTorch: THREE.Object3D = this.entity.area.game.assets.getObject('WallTorch').clone(false);
-    leftTorch.scale.set(0.5, 1, 0.5);
-    leftTorch.position.set(0, 4.4, -this.relativePosition * TOTAL_WIDTH);
-    this.entity.object.add(leftTorch);
+    const torch: THREE.Object3D = this.entity.area.game.assets.getObject('WallTorch').clone(false);
+    torch.scale.set(0.5, 1, 0.5);
+    torch.position.set(0, 4.4, -this.relativePosition * TOTAL_WIDTH);
+    this.entity.object.add(torch);
 
     // Torch Lights
-    const leftTorchLight: THREE.PointLight = new THREE.PointLight(0xffd050, 1, 10, 1);
-    leftTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, -this.relativePosition * TOTAL_WIDTH);
-    this.entity.object.add(leftTorchLight);
+    const torchLight: THREE.PointLight = new THREE.PointLight(0xffd050, 1, 10, 1);
+    torchLight.position.set(WALL_DEPTH + 0.3, 5.3, -this.relativePosition * TOTAL_WIDTH);
+    this.entity.object.add(torchLight);
 
-    const texture = new TextTexture({
+    // Graffiti textures and materials
+    const textTexture = new TextTexture({
       alignment: 'center',
       color: 'red',
       fontFamily: 'Graffiti',
@@ -70,39 +71,31 @@ export class BlankWall implements EntityState {
       strokeColor: '#550000',
       strokeWidth: 0.05,
       fontStyle: 'italic',
-      text: 'There is\nNo\nEscape',
+      text: 'There Is No Escape\n\n',
     });
-    texture.loadFontFace().then(() => {
-      texture.redraw();
-
-      this.height = (TEXTURE_WIDTH * texture.height) / texture.width;
-      this.originalCanvas = texture.image as HTMLCanvasElement;
-      this.newCanvas = document.createElement('canvas');
-      this.newCanvas.width = 2 * this.originalCanvas.width;
-      this.newCanvas.height = 2 * this.originalCanvas.height;
-      texture.image = this.newCanvas;
-      this.texture = texture;
-
-      this.normalCanvas = document.createElement('canvas');
-      this.normalTexture = new THREE.Texture();
-      this.normalTexture.image = this.normalCanvas;
-
-      const material = new THREE.MeshStandardMaterial({ map: texture, normalMap: this.normalTexture });
-      material.transparent = true;
-
-      this.graffitiPlane = new THREE.Mesh(PLANE_GEOMETRY, material);
-      this.graffitiPlane.position.set(0.0, CENTER_TEXT_Y, -this.relativePosition * TOTAL_WIDTH);
-      this.graffitiPlane.rotation.y = Math.PI / 2;
-      this.entity.object.add(this.graffitiPlane);
-
-      this.recomputeTexture();
+    textTexture.loadFontFace().then(() => {
+      textTexture.redraw();
+      this.refreshGraffiti();
     });
+    this.textTexture = textTexture;
+
+    this.normalCanvas = document.createElement('canvas');
+    this.normalTexture = new THREE.Texture(this.normalCanvas);
+    this.graffitiMaterial = new THREE.MeshStandardMaterial({ map: textTexture, normalMap: this.normalTexture });
+    this.graffitiMaterial.transparent = true;
+
+    // Graffiti Plane
+    const graffitiPlane = new THREE.Mesh(PLANE_GEOMETRY, this.graffitiMaterial);
+    graffitiPlane.position.set(0.0, CENTER_TEXT_Y, -this.relativePosition * TOTAL_WIDTH);
+    graffitiPlane.rotation.set(0, Math.PI / 2, 0);
+    this.graffitiPlane = graffitiPlane;
+    this.entity.object.add(graffitiPlane);
   }
 
   /**
-   * Dynamically build the texture to use for the side wall
+   * Build the texture to use for the side wall
    */
-  private buildTexture(imageName: string): THREE.Texture {
+  private buildWallTexture(imageName: string): THREE.Texture {
     const assets = this.entity.area.game.assets;
     const textureName = `${imageName}-Blank`;
 
@@ -121,75 +114,77 @@ export class BlankWall implements EntityState {
     return texture;
   }
 
-  onDestroy(): void {}
+  /**
+   * Refresh all of the graffiti on the wall
+   *
+   * @param width How wide should the texture be in the room
+   */
+  private refreshGraffiti(width = DEFAULT_TEXTURE_WIDTH) {
+    const relativeHeight = width * (this.textTexture.height / this.textTexture.width);
+    this.graffitiPlane.scale.set(width, relativeHeight, 1);
+    this.graffitiPlane.rotation.x = this.angle;
 
-  onStep(): void {
-    const input = this.entity.area.game.input;
-    if (input.isKeyStarted(Key.N)) {
-      this.recomputeTexture();
-    }
-    if (input.isKeyStarted(Key.H)) {
-      this.entity.object.children[3].visible = !this.entity.object.children[3].visible;
-    }
+    this.refreshGraffitiNormalsTexture(width, relativeHeight);
   }
 
-  private recomputeTexture() {
-    if (this.newCanvas === undefined) {
-      return;
-    }
-
-    this.angle += Math.PI / 32;
-
-    const ctx: CanvasRenderingContext2D = this.newCanvas.getContext('2d');
-    ctx.save();
-    ctx.fillStyle = 'white';
-    ctx.clearRect(0, 0, this.newCanvas.width, this.newCanvas.height);
-    ctx.translate(this.originalCanvas.width, this.originalCanvas.height);
-    ctx.rotate(this.angle);
-    ctx.drawImage(this.originalCanvas, -this.originalCanvas.width / 2, -this.originalCanvas.height / 2);
-    ctx.restore();
-
-    this.texture.image = this.newCanvas;
-    this.texture.needsUpdate = true;
-
-    const width = lerp(
-      TEXTURE_WIDTH,
-      this.height * (this.originalCanvas.width / this.originalCanvas.height),
-      Math.abs(Math.sin(this.angle)),
-    );
-    const height = lerp(
-      this.height,
-      TEXTURE_WIDTH * (this.originalCanvas.height / this.originalCanvas.width),
-      Math.abs(Math.sin(this.angle)),
-    );
-
-    this.graffitiPlane.scale.set(width, height, 1);
-    this.buildTextNormals(width, height);
-  }
-
-  private buildTextNormals(width: number, height: number) {
+  /**
+   * Refresh the normal texture given the width and height of the graffiti plane
+   */
+  private refreshGraffitiNormalsTexture(width: number, height: number) {
     const bricks = this.entity.area.game.assets.getImage('BrickNormal');
-
-    this.normalCanvas.width = bricks.width;
-    this.normalCanvas.height = bricks.height;
+    this.normalCanvas.width = bricks.width * NORMAL_SCALE_FACTOR;
+    this.normalCanvas.height = bricks.height * NORMAL_SCALE_FACTOR;
 
     const leftX = TOTAL_WIDTH / 2 - width / 2;
-    const topY = CENTER_TEXT_Y + height / 2;
-
-    const topOffset = (topY / WALL_SCALE) % 1.0;
     const leftOffset = (leftX / WALL_SCALE) % 1.0;
 
-    const normalCtx = this.normalCanvas.getContext('2d');
-    normalCtx.scale(WALL_SCALE / width, WALL_SCALE / height);
-    normalCtx.translate(-leftOffset * bricks.width, topOffset * bricks.height);
+    const topY = CENTER_TEXT_Y + height / 2;
+    const topOffset = (topY / WALL_SCALE) % 1.0;
 
-    for (let x = -1; x < Math.ceil(width); x += 1) {
-      for (let y = -1; y < Math.ceil(height); y += 1) {
-        normalCtx.drawImage(bricks, x * bricks.width, y * bricks.height);
+    // Scale, rotate, and translate the texture to match the current plane position
+    const g2d = this.normalCanvas.getContext('2d');
+    g2d.imageSmoothingEnabled = false;
+    g2d.translate(this.normalCanvas.width / 2, this.normalCanvas.height / 2);
+    g2d.scale((WALL_SCALE * NORMAL_SCALE_FACTOR) / width, (WALL_SCALE * NORMAL_SCALE_FACTOR) / height);
+    g2d.rotate(this.angle);
+    g2d.translate(
+      (-this.normalCanvas.width * width) / (WALL_SCALE * NORMAL_SCALE_FACTOR * 2),
+      (-this.normalCanvas.height * height) / (WALL_SCALE * NORMAL_SCALE_FACTOR * 2),
+    );
+    g2d.translate(-leftOffset * bricks.width, topOffset * bricks.height);
+
+    // Draw the individual tiles for the texture
+    for (let x = -2; x <= Math.ceil(width); x += 1) {
+      for (let y = -2; y <= Math.ceil(height); y += 1) {
+        g2d.drawImage(bricks, x * bricks.width, y * bricks.height);
       }
     }
 
     this.normalTexture.needsUpdate = true;
+  }
+
+  /**
+   * Free any unused resources when the wall is destroyed
+   */
+  onDestroy(): void {
+    this.graffitiMaterial.dispose();
+    this.textTexture.dispose();
+    this.normalTexture.dispose();
+  }
+
+  onStep(): void {
+    const input = this.entity.area.game.input;
+    if (input.isKeyStarted(Key.N)) {
+      this.angle += Math.PI / 32;
+      this.refreshGraffiti();
+    }
+    if (input.isKeyStarted(Key.P)) {
+      this.angle -= Math.PI / 32;
+      this.refreshGraffiti();
+    }
+    if (input.isKeyStarted(Key.H)) {
+      this.entity.object.children[3].visible = !this.entity.object.children[3].visible;
+    }
   }
 
   onTimer(_timerIndex: number): void {}
