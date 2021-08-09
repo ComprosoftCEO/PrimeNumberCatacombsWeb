@@ -71,7 +71,7 @@ export class BlankWall implements EntityState {
       strokeColor: '#550000',
       strokeWidth: 0.05,
       fontStyle: 'italic',
-      text: 'There Is No Escape\n\n',
+      text: 'Dead End',
     });
     textTexture.loadFontFace().then(() => {
       textTexture.redraw();

@@ -29,21 +29,29 @@ impl CatacombNumber {
   }
 
   /// Compute all of the catacomb numbers for the given input
-  pub fn compute_catacombs(mut input: BigUint) -> Vec<CatacombNumber> {
-    let num_bits = input.bits();
+  pub fn compute_catacombs(input: &BigUint, base: u8) -> Vec<CatacombNumber> {
+    // Convert to the base
+    let mut digits = input.to_radix_le(base as u32);
+    digits.push(0); /* Add the leading 0 bit */
 
-    // Toggle the bits one-by-one
-    (0..=num_bits)
+    // Compute all possible combinations for a given base
+    digits
+      .clone()
       .into_iter()
-      .map(|bit| {
-        let bit_set = input.bit(bit);
-        input.set_bit(bit, !bit_set);
-
-        let result = CatacombNumber::new(input.clone());
-
-        input.set_bit(bit, bit_set);
-        result
+      .enumerate()
+      .map(|(index, digit)| {
+        (0..base)
+          .filter(|d| *d != digit)
+          .map(|d| {
+            // Temporarily change the digit
+            digits[index] = d;
+            let number = BigUint::from_radix_le(&digits, base as u32).unwrap();
+            digits[index] = digit;
+            CatacombNumber::new(number)
+          })
+          .collect::<Vec<_>>()
       })
+      .flatten()
       .collect()
   }
 }
@@ -72,7 +80,7 @@ mod test {
     })
     .collect();
 
-    let catacombs = CatacombNumber::compute_catacombs(number);
+    let catacombs = CatacombNumber::compute_catacombs(&number, 2);
     assert_eq!(catacombs.len(), expected.len());
 
     for (given, expected) in catacombs.into_iter().zip(expected) {
