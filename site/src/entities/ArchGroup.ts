@@ -34,7 +34,7 @@ const FONT_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x705024 });
  * Be sure to destroy this entity before moving to another room, or there will be a memory leak!
  */
 export class ArchGroup implements EntityState {
-  public readonly tags: string[] = ['wall'];
+  public readonly tags: string[] = ['wall', 'arch-group'];
 
   private entity: Entity<this>;
   private entries: ArchProps[];
@@ -259,6 +259,21 @@ export class ArchGroup implements EntityState {
 
     for (const textGeometry of this.textGeometry) {
       textGeometry.dispose();
+    }
+  }
+
+  /**
+   * Disable all torches except the torches at the given index
+   * Also enables the left and right torches
+   */
+  public setTorchPosition(index: number): void {
+    this.torchLights.forEach((light) => (light.visible = false));
+
+    // Handle left and right torches, making sure they are inside the array
+    const indexes = [-1, 0, 1].map((offset) => index + offset).filter((i) => i >= 0 && i * 2 < this.torchLights.length);
+    for (const i of indexes) {
+      this.torchLights[i * 2].visible = true;
+      this.torchLights[i * 2 + 1].visible = true;
     }
   }
 

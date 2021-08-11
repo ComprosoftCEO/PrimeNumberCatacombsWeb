@@ -8,6 +8,10 @@ export interface DoorSelectorArea {
   readonly smallestIndex: number; // Inclusive
   readonly largestIndex: number; // Inclusive
 
+  /// Called whenever the camera moves to this position in the room
+  ///  Also called when the camera is first constructed
+  movedTo(index: number): void;
+
   // Test if you can enter a door at a given index
   canEnterDoor(index: number): boolean;
 

@@ -1,4 +1,5 @@
 import { Area, AreaState } from 'engine/area';
+import { Entity } from 'engine/entity';
 import { AudioWrapper } from 'engine/audio';
 import { MouseButton } from 'engine/input';
 import { computeCatacombs } from 'prime-number-catacombs';
@@ -34,7 +35,6 @@ export class MainArea implements AreaState, DoorSelectorArea {
     const catacombNumbers: CatacombNumber[] = computeCatacombs(currentNumber, 2);
     this.entries = catacombNumbers.filter(({ isPrime }) => isPrime).map(({ value }) => value);
   }
-
   public get smallestIndex(): number {
     return 0 - Math.floor(Math.max(this.entries.length - 1, 0) / 2);
   }
@@ -69,6 +69,15 @@ export class MainArea implements AreaState, DoorSelectorArea {
     this.ambient = this.area.createAudio('Ambient');
     if (!this.ambient.isPlaying) {
       this.ambient.play(true);
+    }
+  }
+
+  /**
+   * Called when the camera moves to this index in the room
+   */
+  public movedTo(index: number): void {
+    for (const entity of this.area.findEntities('arch-group') as Entity<ArchGroup>[]) {
+      entity.state.setTorchPosition(index - this.smallestIndex);
     }
   }
 

@@ -56,6 +56,10 @@ export class MazeCamera implements EntityState {
 
     // Add a bit of movement delay for when the room first loads
     this.entity.setTimer(Timer.ClearMovementDelay, MOVEMENT_DELAY_TICKS, false);
+
+    // Indicate the starting position of the camera
+    const area: DoorSelectorArea = this.entity.area.state as MainArea;
+    area.movedTo(this.relativePosition);
   }
 
   onDestroy(): void {}
@@ -135,6 +139,9 @@ export class MazeCamera implements EntityState {
       this.relativePosition -= 1;
       this.movingTick = 0;
       this.entity.clearTimer(Timer.MoveLeft);
+
+      const area: DoorSelectorArea = this.entity.area.state as MainArea;
+      area.movedTo(this.relativePosition);
     }
   }
 
@@ -147,6 +154,9 @@ export class MazeCamera implements EntityState {
       this.relativePosition += 1;
       this.movingTick = 0;
       this.entity.clearTimer(Timer.MoveRight);
+
+      const area: DoorSelectorArea = this.entity.area.state as MainArea;
+      area.movedTo(this.relativePosition);
     }
   }
 
