@@ -23,6 +23,8 @@ const FONT_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x705024 });
 
 /**
  * Represents a wall that can be entered in the maze
+ *
+ * Be sure to destroy this entity before moving to another room, or there will be a memory leak!
  */
 export class MazeWall implements EntityState {
   public readonly tags: string[] = ['wall'];
@@ -105,13 +107,9 @@ export class MazeWall implements EntityState {
 
     // The arch itself
     const arch: THREE.Mesh = this.entity.area.game.assets.getObject('Arch').clone(false) as THREE.Mesh;
-    const leftPillar: THREE.Mesh = arch.children[0] as THREE.Mesh;
-    const rightPillar: THREE.Mesh = arch.children[1] as THREE.Mesh;
     arch.material = ARCH_MATERIAL;
-    leftPillar.material = ARCH_MATERIAL;
-    rightPillar.material = ARCH_MATERIAL;
     arch.scale.set(WALL_DEPTH * 2, 0.5, 0.5);
-    arch.position.set(0, 5.8, -this.relativePosition * TOTAL_WIDTH);
+    arch.position.set(0, -0.2, -this.relativePosition * TOTAL_WIDTH);
     this.entity.object.add(arch);
 
     // Tunnel inside of the arch

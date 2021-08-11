@@ -6,9 +6,9 @@ import { DoorSelectorArea } from './DoorSelectorArea';
 import { FadeInEffect } from 'entities/FadeInEffect';
 import { MazeCamera } from 'entities/MazeCamera';
 import { MazeFloor } from 'entities/MazeFloor';
-import { MazeWall } from 'entities/MazeWall';
-import { Side, SideWall } from 'entities/SideWall';
+import { ArchGroup } from 'entities/ArchGroup';
 import { BlankWall } from 'entities/BlankWall';
+import { Side, SideWall } from 'entities/SideWall';
 
 interface CatacombNumber {
   value: string;
@@ -50,9 +50,10 @@ export class MainArea implements AreaState, DoorSelectorArea {
     this.area.createEntity(new MazeFloor(Math.ceil(this.entries.length / 2)));
 
     // Create the maze walls
-    for (const [index, text] of this.entries.entries()) {
-      this.area.createEntity(new MazeWall(text, this.smallestIndex + index));
-    }
+    const archEntries = this.entries.map((text, index) => ({ text, relativePosition: this.smallestIndex + index }));
+    this.area.createEntity(new ArchGroup(archEntries));
+
+    // Add a blank wall if there are no numbers
     if (this.entries.length === 0) {
       this.area.createEntity(new BlankWall());
     }

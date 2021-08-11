@@ -92,7 +92,7 @@ async function loadAllAssets(game: Game): Promise<Game> {
       manager.saveObject('Arch', gltf.scene.children[0]);
     }),
     game.assets.loadGLTFFile(WallTorch, (gltf, manager) => {
-      manager.saveObject('WallTorch', gltf.scene.children[0].children[0]);
+      manager.saveObject('WallTorch', gltf.scene.children[0]);
     }),
 
     game.assets.loadAudioFile('Ambient', Ambient),
