@@ -24,6 +24,10 @@ impl CatacombNumber {
     &self.value
   }
 
+  pub fn into_value(self) -> BigUint {
+    self.value
+  }
+
   pub fn is_prime(&self) -> bool {
     self.is_prime
   }

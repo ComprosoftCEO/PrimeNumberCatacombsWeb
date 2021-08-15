@@ -2,7 +2,7 @@ mod catacombs;
 mod primality_test;
 mod serialize;
 
-use catacombs::CatacombNumber;
+pub use catacombs::CatacombNumber;
 use num::{BigUint, Num};
 use wasm_bindgen::prelude::*;
 
