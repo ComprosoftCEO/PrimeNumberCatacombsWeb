@@ -31,10 +31,12 @@ export class MainArea implements AreaState, DoorSelectorArea {
    *
    * @param currentNumber Base-10 representation of the prime number
    */
-  constructor(currentNumber: string) {
+  constructor(currentNumber: string, ambient: AudioWrapper | null = null) {
     const catacombNumbers: CatacombNumber[] = computeCatacombs(currentNumber, 2);
     this.entries = catacombNumbers.filter(({ isPrime }) => isPrime).map(({ value }) => value);
+    this.ambient = ambient;
   }
+
   public get smallestIndex(): number {
     return 0 - Math.floor(Math.max(this.entries.length - 1, 0) / 2);
   }
@@ -66,7 +68,9 @@ export class MainArea implements AreaState, DoorSelectorArea {
     this.area.createEntity(new FadeInEffect());
 
     // Start the creepy ambient noise
-    this.ambient = this.area.createAudio('Ambient');
+    if (this.ambient === null) {
+      this.ambient = this.area.createAudio('Ambient');
+    }
     if (!this.ambient.isPlaying) {
       this.ambient.play(true);
     }
@@ -102,7 +106,7 @@ export class MainArea implements AreaState, DoorSelectorArea {
   }
 
   onTimer(timerIndex: number): void {
-    this.area.game.setArea(new MainArea(this.entries[timerIndex]));
+    this.area.game.setArea(new MainArea(this.entries[timerIndex], this.ambient));
   }
 
   onStep(): void {
