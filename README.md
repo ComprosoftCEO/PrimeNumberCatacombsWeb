@@ -12,6 +12,7 @@ You will need to install the following tools:
 
 After cloning the repository, the first step is to compile the Rust code to WebAssembly.
 This will put all the compiled WebAssembly and JavaScript code files into the `pkg/` directory.
+Navigate to the `wasm/` directory (using `cd wasm`), then run the command:
 
 ```bash
 wasm-pack build
