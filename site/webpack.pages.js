@@ -5,6 +5,6 @@ module.exports = merge(common, {
   mode: 'production',
   devtool: 'source-map',
   output: {
-    publicPath: '/TrappedInside/',
+    publicPath: '/PrimeNumberCatacombsWeb/',
   },
 });

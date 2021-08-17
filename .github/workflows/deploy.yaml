@@ -1,0 +1,182 @@
+name: Build and Deploy Code
+on: [push]
+jobs:
+  unit_test_rust:
+    name: Unit Test Rust Code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./wasm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cache Rust Dependencies
+        uses: Swatinem/rust-cache@v1
+
+      - run: cargo test
+
+  lint_rust:
+    name: Lint Rust Code
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./wasm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cache Rust Dependencies
+        uses: Swatinem/rust-cache@v1
+
+      - run: cargo clippy
+
+  build_rust_wasm:
+    name: Build WASM Package
+    needs: [unit_test_rust, lint_rust]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./wasm
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cache Rust Dependencies
+        uses: Swatinem/rust-cache@v1
+
+      - name: Download wasm-pack
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: "latest"
+      - run: wasm-pack build
+
+      - name: Save package files
+        uses: actions/upload-artifact@v2
+        with:
+          name: prime-number-catacombs-pkg
+          path: wasm/pkg/*
+
+  unit_test_typescript:
+    name: Unit Test TypeScript Code
+    needs: [build_rust_wasm]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./site
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+          cache: "npm"
+          cache-dependency-path: site/package-lock.json
+
+      - name: Download prime-number-catacombs package
+        uses: actions/download-artifact@v2
+        with:
+          name: prime-number-catacombs-pkg
+          path: wasm/pkg/
+
+      - name: Link with local WASM package
+        run: |
+          cd ../wasm/pkg
+          npm link
+          cd ../../site
+          npm link prime-number-catacombs
+
+      - run: npm install -f
+      - run: npm run test
+
+  lint_typescript:
+    name: Lint TypeScript Code
+    needs: [build_rust_wasm]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./site
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+          cache: "npm"
+          cache-dependency-path: site/package-lock.json
+
+      - name: Download prime-number-catacombs package
+        uses: actions/download-artifact@v2
+        with:
+          name: prime-number-catacombs-pkg
+          path: wasm/pkg/
+
+      - name: Link with local WASM package
+        run: |
+          cd ../wasm/pkg
+          npm link
+          cd ../../site
+          npm link prime-number-catacombs
+
+      - run: npm install -f
+      - run: npm run lint
+
+  build_gh_pages:
+    name: Build for GitHub Pages
+    needs: [unit_test_typescript, lint_typescript]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./site
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+          cache: "npm"
+          cache-dependency-path: site/package-lock.json
+
+      - name: Download prime-number-catacombs package
+        uses: actions/download-artifact@v2
+        with:
+          name: prime-number-catacombs-pkg
+          path: wasm/pkg/
+
+      - name: Link with local WASM package
+        run: |
+          cd ../wasm/pkg
+          npm link
+          cd ../../site
+          npm link prime-number-catacombs
+
+      - run: npm install -f
+      - run: npm run build-pages
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: site/build
+          single-commit: true
