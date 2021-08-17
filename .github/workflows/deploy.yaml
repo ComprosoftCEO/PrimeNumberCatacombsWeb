@@ -1,5 +1,9 @@
 name: Build and Deploy Code
-on: [push]
+on:
+  push:
+    paths:
+      - "wasm/**"
+      - "site/**"
 jobs:
   unit_test_rust:
     name: Unit Test Rust Code
