@@ -7,9 +7,10 @@
     "start": "webpack serve --open",
     "watch": "webpack --watch",
     "build": "webpack",
+    "build-pages": "webpack --config webpack.pages.js",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Notice: no tests specified\" && exit 0"
   },
   "author": "Bryan McClain <bamcclain10@gmail.com>",
   "devDependencies": {
@@ -33,7 +34,8 @@
     "typescript": "^4.1.5",
     "webpack": "^5.21.2",
     "webpack-cli": "^4.5.0",
-    "webpack-dev-server": "^3.11.2"
+    "webpack-dev-server": "^3.11.2",
+    "webpack-merge": "^5.8.0"
   },
   "dependencies": {
     "@seregpie/three.text-texture": "^3.2.1",
