@@ -4,6 +4,7 @@ on:
     paths:
       - "wasm/**"
       - "site/**"
+      - ".github/**"
 jobs:
   unit_test_rust:
     name: Unit Test Rust Code
@@ -184,3 +185,9 @@ jobs:
           branch: gh-pages
           folder: site/build
           single-commit: true
+
+      - name: Save artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-gh-pages
+          path: site/build/*
