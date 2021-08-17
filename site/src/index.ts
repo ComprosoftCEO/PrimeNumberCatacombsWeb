@@ -26,7 +26,8 @@ import WallTorch from 'assets/objects/wall-torch.glb';
 import Ambient from 'assets/music/ambient.ogg';
 
 // Fonts
-import NumberFont from 'assets/fonts/SpecialElite_Regular.json';
+import NumberFont from 'assets/fonts/special-elite.json';
+import './fonts.css';
 
 // Build the canvas objects
 const gameCanvas = document.createElement('canvas');

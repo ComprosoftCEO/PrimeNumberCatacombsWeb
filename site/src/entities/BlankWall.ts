@@ -1,5 +1,6 @@
 import { Entity, EntityState } from 'engine/entity';
 import { Key } from 'engine/input';
+import { pickRandomArray } from 'engine/helpers';
 import { TOTAL_WIDTH, WALL_DEPTH, WALL_HEIGHT, WALL_SCALE } from './Constants';
 import TextTexture from '@seregpie/three.text-texture';
 import * as THREE from 'three';
@@ -11,6 +12,30 @@ const BLANK_MATERIAL = new THREE.MeshStandardMaterial();
 const CENTER_TEXT_Y = 6.5;
 const DEFAULT_TEXTURE_WIDTH = 10;
 const NORMAL_SCALE_FACTOR = 2;
+
+const ALL_FONTS: string[] = [
+  '08 Underground',
+  'A Another Tag',
+  'A Attack Graffiti',
+  'A Dripping Marker',
+  'Barrio Rifa',
+  'Bopollux',
+  'Bored Schoolboy',
+  'Dark Font',
+  'DJ Gross',
+  'Elevenoone',
+  'Gang Bang Crime',
+  'Graffonti',
+  'I Lost It In The Street',
+  'Insane',
+  'Muro SP',
+  'Neo Bopollux',
+  'Pixel Retro SP',
+  'Real Breakerz',
+  'Reskagraf',
+  'Souper 3',
+  'Street Style',
+];
 
 /**
  * Blank wall in the maze
@@ -66,7 +91,7 @@ export class BlankWall implements EntityState {
     const textTexture = new TextTexture({
       alignment: 'center',
       color: 'red',
-      fontFamily: 'Graffiti',
+      fontFamily: pickRandomArray(ALL_FONTS),
       fontSize: 96,
       strokeColor: '#550000',
       strokeWidth: 0.05,
