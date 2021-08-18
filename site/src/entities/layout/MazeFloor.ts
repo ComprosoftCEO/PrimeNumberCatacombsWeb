@@ -1,5 +1,6 @@
 import { Entity, EntityState } from 'engine/entity';
-import { INSIDE_DEPTH, TOTAL_WIDTH } from './Constants';
+import { LayoutEntity } from './LayoutEntity';
+import { INSIDE_DEPTH, TOTAL_WIDTH } from '../Constants';
 import * as THREE from 'three';
 
 const PLANE_GEOMETRY = new THREE.PlaneGeometry();
@@ -9,12 +10,11 @@ const FLOOR_SCALE = 6;
 /**
  * Represents the floor in the maze
  */
-export class MazeFloor implements EntityState {
-  public readonly tags: string[] = ['wall'];
-
-  public readonly width: number;
+export class MazeFloor implements EntityState, LayoutEntity {
+  public readonly tags: string[] = ['layout-entity'];
 
   private entity: Entity<this>;
+  private readonly width: number;
 
   /**
    * Create a new plane for the floor
@@ -50,6 +50,10 @@ export class MazeFloor implements EntityState {
     texture.repeat.set((2 * INSIDE_DEPTH) / FLOOR_SCALE, this.width / FLOOR_SCALE);
     texture.offset.set(0.5, 0.5);
     return texture;
+  }
+
+  public dispose(): void {
+    this.entity.destroy();
   }
 
   onDestroy(): void {}

@@ -1,7 +1,6 @@
 import { Entity, EntityState } from 'engine/entity';
 import { Key } from 'engine/input';
 import { TOTAL_WIDTH, INSIDE_DEPTH, CAMERA_DIST_OUT } from './Constants';
-import { MainArea } from 'areas/MainArea';
 import { DoorSelectorArea } from 'areas/DoorSelectorArea';
 import * as THREE from 'three';
 
@@ -58,8 +57,7 @@ export class MazeCamera implements EntityState {
     this.entity.setTimer(Timer.ClearMovementDelay, MOVEMENT_DELAY_TICKS, false);
 
     // Indicate the starting position of the camera
-    const area: DoorSelectorArea = this.entity.area.state as MainArea;
-    area.movedTo(this.relativePosition);
+    this.doorSelector.movedTo(this.relativePosition);
   }
 
   onDestroy(): void {}
@@ -70,17 +68,22 @@ export class MazeCamera implements EntityState {
     this.camera.updateProjectionMatrix();
 
     // Handle user input
-    const area: DoorSelectorArea = this.entity.area.state as MainArea;
     const input = this.entity.area.game.input;
+    const doorSelector = this.doorSelector;
     if (!this.isMoving) {
-      if (input.isKeyStarted(Key.Left) && this.relativePosition > area.smallestIndex) {
+      if (input.isKeyStarted(Key.Left) && this.relativePosition > doorSelector.smallestIndex) {
         this.moveLeft();
-      } else if (input.isKeyStarted(Key.Right) && this.relativePosition < area.largestIndex) {
+      } else if (input.isKeyStarted(Key.Right) && this.relativePosition < doorSelector.largestIndex) {
         this.moveRight();
-      } else if (input.isKeyStarted(Key.Up) && area.canEnterDoor(this.relativePosition)) {
+      } else if (input.isKeyStarted(Key.Up) && doorSelector.canEnterDoor(this.relativePosition)) {
         this.zoomIn();
       }
     }
+  }
+
+  // Cast the current area into the DoorSelectorArea interface
+  private get doorSelector(): DoorSelectorArea {
+    return this.entity.area.state as DoorSelectorArea;
   }
 
   // Test if the camera is currently moving
@@ -140,8 +143,7 @@ export class MazeCamera implements EntityState {
       this.movingTick = 0;
       this.entity.clearTimer(Timer.MoveLeft);
 
-      const area: DoorSelectorArea = this.entity.area.state as MainArea;
-      area.movedTo(this.relativePosition);
+      this.doorSelector.movedTo(this.relativePosition);
     }
   }
 
@@ -155,8 +157,7 @@ export class MazeCamera implements EntityState {
       this.movingTick = 0;
       this.entity.clearTimer(Timer.MoveRight);
 
-      const area: DoorSelectorArea = this.entity.area.state as MainArea;
-      area.movedTo(this.relativePosition);
+      this.doorSelector.movedTo(this.relativePosition);
     }
   }
 
@@ -169,8 +170,7 @@ export class MazeCamera implements EntityState {
       this.movingTick = 0;
       this.entity.clearTimer(Timer.ZoomIn);
 
-      const area: DoorSelectorArea = this.entity.area.state as MainArea;
-      area.enterDoor(this.relativePosition);
+      this.doorSelector.enterDoor(this.relativePosition);
     }
   }
 

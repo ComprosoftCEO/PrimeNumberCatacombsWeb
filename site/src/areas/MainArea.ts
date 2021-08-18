@@ -4,12 +4,13 @@ import { AudioWrapper } from 'engine/audio';
 import { MouseButton } from 'engine/input';
 import { computeCatacombs } from 'prime-number-catacombs';
 import { DoorSelectorArea } from './DoorSelectorArea';
-import { FadeInEffect } from 'entities/FadeInEffect';
+import { FadeInEffect } from 'entities/effects/FadeInEffect';
 import { MazeCamera } from 'entities/MazeCamera';
-import { MazeFloor } from 'entities/MazeFloor';
-import { ArchGroup } from 'entities/ArchGroup';
-import { BlankWall } from 'entities/BlankWall';
-import { Side, SideWall } from 'entities/SideWall';
+import { MazeFloor } from 'entities/layout/MazeFloor';
+import { ArchGroup } from 'entities/layout/ArchGroup';
+import { BlankWall } from 'entities/unused/BlankWall';
+import { Side, SideWall } from 'entities/layout/SideWall';
+import { LayoutEntity, TorchEntity } from 'entities/layout/LayoutEntity';
 
 interface CatacombNumber {
   value: string;
@@ -52,7 +53,10 @@ export class MainArea implements AreaState, DoorSelectorArea {
     this.area.createEntity(new MazeFloor(Math.ceil(this.entries.length / 2)));
 
     // Create the maze walls
-    const archEntries = this.entries.map((text, index) => ({ text, relativePosition: this.smallestIndex + index }));
+    const archEntries = this.entries.map((text, index) => ({
+      text,
+      relativePosition: this.smallestIndex + index,
+    }));
     this.area.createEntity(new ArchGroup(archEntries));
 
     // Add a blank wall if there are no numbers
@@ -80,8 +84,8 @@ export class MainArea implements AreaState, DoorSelectorArea {
    * Called when the camera moves to this index in the room
    */
   public movedTo(index: number): void {
-    for (const entity of this.area.findEntities('arch-group') as Entity<ArchGroup>[]) {
-      entity.state.setTorchPosition(index - this.smallestIndex);
+    for (const entity of this.area.findEntities('torch-entity') as Entity<TorchEntity>[]) {
+      entity.state.setTorchPosition(index);
     }
   }
 
@@ -96,9 +100,9 @@ export class MainArea implements AreaState, DoorSelectorArea {
    * Action fired when a door is entered
    */
   public enterDoor(index: number): void {
-    // Clear any door resources
-    for (const door of this.area.findEntities('wall')) {
-      door.destroy();
+    // Clear any room resources
+    for (const object of this.area.findEntities('layout-entity') as Entity<LayoutEntity>[]) {
+      object.state.dispose();
     }
 
     // Hacky: use the timer index to specify the next room to visit

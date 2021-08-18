@@ -1,5 +1,5 @@
 import { Entity, EntityState } from 'engine/entity';
-import { WALL_SCALE, UNITS_WIDE, TOTAL_WIDTH, WALL_HEIGHT, WALL_DEPTH, INSIDE_DEPTH } from './Constants';
+import { WALL_SCALE, UNITS_WIDE, TOTAL_WIDTH, WALL_HEIGHT, WALL_DEPTH, INSIDE_DEPTH } from '../Constants';
 import * as THREE from 'three';
 
 // These values are computed from the geometry

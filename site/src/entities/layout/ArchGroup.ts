@@ -1,10 +1,11 @@
 import { Entity, EntityState } from 'engine/entity';
-import { WALL_SCALE, UNITS_WIDE, TOTAL_WIDTH, WALL_HEIGHT, WALL_DEPTH, INSIDE_DEPTH } from './Constants';
+import { WALL_SCALE, UNITS_WIDE, TOTAL_WIDTH, WALL_HEIGHT, WALL_DEPTH, INSIDE_DEPTH } from '../Constants';
 import * as THREE from 'three';
+import { LayoutEntity, TorchEntity } from './LayoutEntity';
 
 /// Defines how a single archway looks
 export interface ArchProps {
-  text: string;
+  text?: string;
   relativePosition: number;
 }
 
@@ -33,8 +34,8 @@ const FONT_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x705024 });
  *
  * Be sure to destroy this entity before moving to another room, or there will be a memory leak!
  */
-export class ArchGroup implements EntityState {
-  public readonly tags: string[] = ['wall', 'arch-group'];
+export class ArchGroup implements EntityState, LayoutEntity, TorchEntity {
+  public readonly tags: string[] = ['layout-entity', 'torch-entity'];
 
   private entity: Entity<this>;
   private entries: ArchProps[];
@@ -53,10 +54,11 @@ export class ArchGroup implements EntityState {
   private textGeometry: THREE.TextGeometry[];
 
   // Lights for dimming
-  private torchLights: THREE.PointLight[];
+  private torchLights: Map<number, THREE.PointLight[]>;
 
   constructor(entries: ArchProps[]) {
     this.entries = entries;
+    this.torchLights = new Map(entries.map(({ relativePosition }) => [relativePosition, []]));
   }
 
   onCreate(entity: Entity<this>): void {
@@ -106,7 +108,7 @@ export class ArchGroup implements EntityState {
 
     // Build the text geometries
     const font = this.entity.area.game.assets.getFont('Number');
-    this.textGeometry = this.entries.map(({ text }) => {
+    this.textGeometry = this.entries.map(({ text = '' }) => {
       return new THREE.TextGeometry(text, { font, size: 0.8, height: 1, curveSegments: 1 });
     });
 
@@ -201,6 +203,17 @@ export class ArchGroup implements EntityState {
         .setPosition(WALL_DEPTH, 4.4, -3.175 + -relativePosition * TOTAL_WIDTH);
       this.torch.setMatrixAt(2 * index + 1, rightTorchTransform);
 
+      // Torch lights
+      const leftTorchLight: THREE.PointLight = new THREE.PointLight(0xffd050, 1, 13, 1);
+      leftTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, 3.175 + -relativePosition * TOTAL_WIDTH);
+      this.entity.object.add(leftTorchLight);
+
+      const rightTorchLight: THREE.PointLight = leftTorchLight.clone();
+      rightTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, -3.175 + -relativePosition * TOTAL_WIDTH);
+      this.entity.object.add(rightTorchLight);
+
+      this.torchLights.get(relativePosition).push(leftTorchLight, rightTorchLight);
+
       // 3D Text
       const textGeometry = this.textGeometry[index];
       textGeometry.computeBoundingBox();
@@ -214,21 +227,6 @@ export class ArchGroup implements EntityState {
       this.entity.object.add(textMesh);
     }
 
-    // Build the torch lights
-    this.torchLights = this.entries
-      .map(({ relativePosition }) => {
-        const leftTorchLight: THREE.PointLight = new THREE.PointLight(0xffd050, 1, 13, 1);
-        leftTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, 3.175 + -relativePosition * TOTAL_WIDTH);
-        this.entity.object.add(leftTorchLight);
-
-        const rightTorchLight: THREE.PointLight = leftTorchLight.clone();
-        rightTorchLight.position.set(WALL_DEPTH + 0.3, 5.3, -3.175 + -relativePosition * TOTAL_WIDTH);
-        this.entity.object.add(rightTorchLight);
-
-        return [leftTorchLight, rightTorchLight];
-      })
-      .flat(1);
-
     // Mark all of the instanced meshes for update
     this.leftSideWall.instanceMatrix.needsUpdate = true;
     this.rightSideWall.instanceMatrix.needsUpdate = true;
@@ -240,41 +238,6 @@ export class ArchGroup implements EntityState {
     this.rightInsideWall.instanceMatrix.needsUpdate = true;
     this.topInsideWall.instanceMatrix.needsUpdate = true;
     this.torch.instanceMatrix.needsUpdate = true;
-  }
-
-  /**
-   * Dispose of all materials
-   */
-  onDestroy(): void {
-    this.leftSideWall.dispose();
-    this.rightSideWall.dispose();
-    this.topWall.dispose();
-    this.leftMiniCube.dispose();
-    this.rightMiniCube.dispose();
-    this.arch.dispose();
-    this.leftInsideWall.dispose();
-    this.rightInsideWall.dispose();
-    this.topInsideWall.dispose();
-    this.torch.dispose();
-
-    for (const textGeometry of this.textGeometry) {
-      textGeometry.dispose();
-    }
-  }
-
-  /**
-   * Disable all torches except the torches at the given index
-   * Also enables the left and right torches
-   */
-  public setTorchPosition(index: number): void {
-    this.torchLights.forEach((light) => (light.visible = false));
-
-    // Handle left and right torches, making sure they are inside the array
-    const indexes = [-1, 0, 1].map((offset) => index + offset).filter((i) => i >= 0 && i * 2 < this.torchLights.length);
-    for (const i of indexes) {
-      this.torchLights[i * 2].visible = true;
-      this.torchLights[i * 2 + 1].visible = true;
-    }
   }
 
   private static buildMaterial(
@@ -388,9 +351,49 @@ export class ArchGroup implements EntityState {
     return texture;
   }
 
+  public dispose(): void {
+    this.entity.destroy();
+  }
+
+  public setTorchPosition(relativePosition: number): void {
+    // Disable all torches
+    this.torchLights.forEach((torches) => torches.forEach((torch) => (torch.visible = false)));
+
+    // Enable the center, left, and right torches
+    const centerTorches = this.torchLights.get(relativePosition) ?? [];
+    const leftTorches = this.torchLights.get(relativePosition - 1) ?? [];
+    const rightTorches = this.torchLights.get(relativePosition + 1) ?? [];
+
+    centerTorches.forEach((torch) => (torch.visible = true));
+    leftTorches.forEach((torch) => (torch.visible = true));
+    rightTorches.forEach((torch) => (torch.visible = true));
+  }
+
+  public setTorchBrightness(brightness: number): void {
+    this.torchLights.forEach((torches) => torches.forEach((torch) => (torch.intensity = brightness)));
+  }
+
+  /**
+   * Dispose of all resources
+   */
+  onDestroy(): void {
+    this.leftSideWall.dispose();
+    this.rightSideWall.dispose();
+    this.topWall.dispose();
+    this.leftMiniCube.dispose();
+    this.rightMiniCube.dispose();
+    this.arch.dispose();
+    this.leftInsideWall.dispose();
+    this.rightInsideWall.dispose();
+    this.topInsideWall.dispose();
+    this.torch.dispose();
+
+    for (const textGeometry of this.textGeometry) {
+      textGeometry.dispose();
+    }
+  }
+
   onStep(): void {}
-
   onTimer(_timerIndex: number): void {}
-
   onDraw(_g2d: CanvasRenderingContext2D): void {}
 }

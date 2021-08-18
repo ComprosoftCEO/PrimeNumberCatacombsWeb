@@ -1,10 +1,12 @@
+import { AreaState } from 'engine/area';
+
 /**
  * Represents an "area" with a series of doors that can be selected.
  *
  * This defines a common interface to use when selecting a door,
  *  allowing the same logic to be used for menus and the gameplay.
  */
-export interface DoorSelectorArea {
+export interface DoorSelectorArea extends AreaState {
   readonly smallestIndex: number; // Inclusive
   readonly largestIndex: number; // Inclusive
 

@@ -1,5 +1,6 @@
 import { Entity, EntityState } from 'engine/entity';
-import { CAMERA_DIST_OUT, TOTAL_WIDTH, UNITS_WIDE, WALL_HEIGHT, WALL_SCALE } from './Constants';
+import { LayoutEntity } from './LayoutEntity';
+import { CAMERA_DIST_OUT, TOTAL_WIDTH, UNITS_WIDE, WALL_HEIGHT, WALL_SCALE } from '../Constants';
 import * as THREE from 'three';
 
 const WALL_DEPTH = ((UNITS_WIDE - 1) / 2) * WALL_SCALE;
@@ -14,10 +15,10 @@ export enum Side {
 }
 
 /**
- * Left wall along the main area
+ * Left or right wall along the main area
  */
-export class SideWall implements EntityState {
-  public readonly tags: string[] = ['wall'];
+export class SideWall implements EntityState, LayoutEntity {
+  public readonly tags: string[] = ['layout-entity'];
 
   private entity: Entity<this>;
 
@@ -74,11 +75,15 @@ export class SideWall implements EntityState {
   private computeSideOffset(): number {
     switch (this.side) {
       case Side.Left:
-        return +WALL_OFFSET / 2 + WALL_DEPTH / 2; //(TOTAL_WIDTH / 2) - (3 * WALL_DEPTH) / 6;
+        return +WALL_OFFSET / 2 + WALL_DEPTH / 2;
 
       case Side.Right:
-        return -WALL_OFFSET / 2 - WALL_DEPTH / 2; //(TOTAL_WIDTH / 2) + (3 * WALL_DEPTH) / 6;
+        return -WALL_OFFSET / 2 - WALL_DEPTH / 2;
     }
+  }
+
+  public dispose(): void {
+    this.entity.destroy();
   }
 
   onDestroy(): void {}
