@@ -1,10 +1,12 @@
+export type RandomFn = () => number;
+
 /**
  * Generate a random float [min, max)
  *
  * Code from: https://www.codegrepper.com/code-examples/javascript/generate+random+float+number+in+range+javascript
  */
-export function randomFloat(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1) + min);
+export function randomFloat(min: number, max: number, random: RandomFn = Math.random): number {
+  return Math.floor(random() * (max - min + 1) + min);
 }
 
 /**
@@ -12,20 +14,49 @@ export function randomFloat(min: number, max: number): number {
  *
  * Code from: https://www.codegrepper.com/code-examples/javascript/generate+random+float+number+in+range+javascript
  */
-export function randomInt(min: number, max: number): number {
+export function randomInt(min: number, max: number, random: RandomFn = Math.random): number {
   min = Math.ceil(min);
   max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(random() * (max - min + 1)) + min;
 }
 
 /**
  * Pick a random value from an array
  *
  * @param values Array to pick a random value from
+ * @param random Random number generator, default is Math.random
  * @returns Random value
  */
-export function pickRandomArray<T>(values: T[]): T {
-  return values[randomInt(0, values.length - 1)];
+export function pickRandomArray<T>(values: T[], random: RandomFn = Math.random): T {
+  return values[randomInt(0, values.length - 1, random)];
+}
+
+/**
+ * Shuffle an array of values
+ *
+ * Code is based on: https://www.npmjs.com/package/shuffle-array
+ *
+ * @param values Array of values to shuffle
+ * @param newArray If true, returns a new array instead of modifying the old array
+ * @param random Random number generator, default is Math.random
+ */
+export function shuffleArray<T>(values: T[], newArray = false, random: RandomFn = Math.random): T[] {
+  const collection = newArray ? [...values] : values;
+
+  // Perform an O(n) pass through the array to swap values
+  let length = collection.length;
+  while (length > 0) {
+    // Pick a random index in the array to swap
+    const randomIndex = Math.floor(random() * length);
+    length -= 1;
+
+    // Swap the two values in the array
+    const temp = collection[length];
+    collection[length] = collection[randomIndex];
+    collection[randomIndex] = temp;
+  }
+
+  return collection;
 }
 
 /**

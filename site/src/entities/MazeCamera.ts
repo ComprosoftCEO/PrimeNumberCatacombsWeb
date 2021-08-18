@@ -48,7 +48,7 @@ export class MazeCamera implements EntityState {
       0.001,
       1000,
     );
-    this.camera.position.set(CAMERA_DIST_OUT, 4.8, this.relativePosition * TOTAL_WIDTH);
+    this.camera.position.set(CAMERA_DIST_OUT, 4.8, -this.relativePosition * TOTAL_WIDTH);
     this.camera.rotateY(Math.PI / 2);
     this.entity.area.camera = this.camera;
     this.entity.object = this.camera;
