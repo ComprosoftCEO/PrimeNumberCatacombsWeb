@@ -1,7 +1,7 @@
 import { Entity, EntityState } from 'engine/entity';
 import { WALL_SCALE, UNITS_WIDE, TOTAL_WIDTH, WALL_HEIGHT, WALL_DEPTH, INSIDE_DEPTH } from '../Constants';
-import * as THREE from 'three';
 import { LayoutEntity, TorchEntity } from './LayoutEntity';
+import * as THREE from 'three';
 
 /// Defines how a single archway looks
 export interface ArchProps {
@@ -17,7 +17,7 @@ const MINI_HEIGHT = 1;
 const SIDE_WIDTH = (UNITS_WIDE * WALL_SCALE - ARCH_WIDTH) / 2;
 
 // Static data storage
-const BOX_GEOMETRY = new THREE.BoxGeometry(1, 1, 1);
+const PLANE_GEOMETRY = new THREE.PlaneGeometry();
 const LEFT_SIDE_MATERIAL = new THREE.MeshStandardMaterial();
 const RIGHT_SIDE_MATERIAL = new THREE.MeshStandardMaterial();
 const TOP_WALL_MATERIAL = new THREE.MeshStandardMaterial();
@@ -76,18 +76,18 @@ export class ArchGroup implements EntityState, LayoutEntity, TorchEntity {
     ArchGroup.buildMaterial(INSIDE_TOP_MATERIAL, 'Brick', this.buildInsideTopTexture.bind(this));
 
     // Create all of the instanced meshes
-    this.leftSideWall = new THREE.InstancedMesh(BOX_GEOMETRY, LEFT_SIDE_MATERIAL, this.entries.length);
-    this.rightSideWall = new THREE.InstancedMesh(BOX_GEOMETRY, RIGHT_SIDE_MATERIAL, this.entries.length);
-    this.topWall = new THREE.InstancedMesh(BOX_GEOMETRY, TOP_WALL_MATERIAL, this.entries.length);
-    this.leftMiniCube = new THREE.InstancedMesh(BOX_GEOMETRY, LEFT_MINI_MATERIAL, this.entries.length);
-    this.rightMiniCube = new THREE.InstancedMesh(BOX_GEOMETRY, RIGHT_MINI_MATERIAL, this.entries.length);
+    this.leftSideWall = new THREE.InstancedMesh(PLANE_GEOMETRY, LEFT_SIDE_MATERIAL, this.entries.length);
+    this.rightSideWall = new THREE.InstancedMesh(PLANE_GEOMETRY, RIGHT_SIDE_MATERIAL, this.entries.length);
+    this.topWall = new THREE.InstancedMesh(PLANE_GEOMETRY, TOP_WALL_MATERIAL, this.entries.length);
+    this.leftMiniCube = new THREE.InstancedMesh(PLANE_GEOMETRY, LEFT_MINI_MATERIAL, this.entries.length);
+    this.rightMiniCube = new THREE.InstancedMesh(PLANE_GEOMETRY, RIGHT_MINI_MATERIAL, this.entries.length);
 
     const archObject: THREE.Mesh = this.entity.area.game.assets.getObject('Arch') as THREE.Mesh;
     this.arch = new THREE.InstancedMesh(archObject.geometry, ARCH_MATERIAL, this.entries.length);
 
-    this.leftInsideWall = new THREE.InstancedMesh(BOX_GEOMETRY, INSIDE_SIDE_MATERIAL, this.entries.length);
-    this.rightInsideWall = new THREE.InstancedMesh(BOX_GEOMETRY, INSIDE_SIDE_MATERIAL, this.entries.length);
-    this.topInsideWall = new THREE.InstancedMesh(BOX_GEOMETRY, INSIDE_TOP_MATERIAL, this.entries.length);
+    this.leftInsideWall = new THREE.InstancedMesh(PLANE_GEOMETRY, INSIDE_SIDE_MATERIAL, this.entries.length);
+    this.rightInsideWall = new THREE.InstancedMesh(PLANE_GEOMETRY, INSIDE_SIDE_MATERIAL, this.entries.length);
+    this.topInsideWall = new THREE.InstancedMesh(PLANE_GEOMETRY, INSIDE_TOP_MATERIAL, this.entries.length);
 
     const torch: THREE.Mesh = this.entity.area.game.assets.getObject('WallTorch') as THREE.Mesh;
     TORCH_MATERIAL.copy(torch.material as THREE.MeshStandardMaterial);
@@ -116,43 +116,36 @@ export class ArchGroup implements EntityState, LayoutEntity, TorchEntity {
     for (const [index, { relativePosition }] of this.entries.entries()) {
       // Left and right walls
       const leftSideTransform = new THREE.Matrix4()
-        .makeScale(WALL_DEPTH, WALL_HEIGHT, SIDE_WIDTH)
-        .setPosition(
-          -WALL_DEPTH / 2,
-          WALL_HEIGHT / 2,
-          SIDE_WIDTH / 2 + ARCH_WIDTH / 2 + -relativePosition * TOTAL_WIDTH,
-        );
+        .makeScale(1, WALL_HEIGHT, SIDE_WIDTH)
+        .multiply(new THREE.Matrix4().makeRotationY(Math.PI / 2))
+        .setPosition(0, WALL_HEIGHT / 2, SIDE_WIDTH / 2 + ARCH_WIDTH / 2 + -relativePosition * TOTAL_WIDTH);
       this.leftSideWall.setMatrixAt(index, leftSideTransform);
 
       const rightSideTransform = new THREE.Matrix4()
-        .makeScale(WALL_DEPTH, WALL_HEIGHT, SIDE_WIDTH)
-        .setPosition(
-          -WALL_DEPTH / 2,
-          WALL_HEIGHT / 2,
-          -SIDE_WIDTH / 2 - ARCH_WIDTH / 2 + -relativePosition * TOTAL_WIDTH,
-        );
+        .makeScale(1, WALL_HEIGHT, SIDE_WIDTH)
+        .multiply(new THREE.Matrix4().makeRotationY(Math.PI / 2))
+        .setPosition(0, WALL_HEIGHT / 2, -SIDE_WIDTH / 2 - ARCH_WIDTH / 2 + -relativePosition * TOTAL_WIDTH);
       this.rightSideWall.setMatrixAt(index, rightSideTransform);
 
       // Top of the arch
       const topTransform = new THREE.Matrix4()
-        .makeScale(WALL_DEPTH, WALL_HEIGHT - ARCH_HEIGHT, ARCH_WIDTH)
-        .setPosition(-WALL_DEPTH / 2, ARCH_HEIGHT + (WALL_HEIGHT - ARCH_HEIGHT) / 2, -relativePosition * TOTAL_WIDTH);
+        .makeScale(1, WALL_HEIGHT - ARCH_HEIGHT, ARCH_WIDTH)
+        .multiply(new THREE.Matrix4().makeRotationY(Math.PI / 2))
+        .setPosition(0, ARCH_HEIGHT + (WALL_HEIGHT - ARCH_HEIGHT) / 2, -relativePosition * TOTAL_WIDTH);
       this.topWall.setMatrixAt(index, topTransform);
 
       // Mini boxes between the sides and top
       const leftMiniTransform = new THREE.Matrix4()
-        .makeScale(WALL_DEPTH, MINI_HEIGHT, MINI_WIDTH)
-        .setPosition(
-          -WALL_DEPTH / 2,
-          ARCH_HEIGHT - MINI_HEIGHT / 2,
-          (ARCH_WIDTH - MINI_WIDTH) / 2 + -relativePosition * TOTAL_WIDTH,
-        );
+        .makeScale(1, MINI_HEIGHT, MINI_WIDTH)
+        .multiply(new THREE.Matrix4().makeRotationY(Math.PI / 2))
+        .setPosition(0, ARCH_HEIGHT - MINI_HEIGHT / 2, (ARCH_WIDTH - MINI_WIDTH) / 2 + -relativePosition * TOTAL_WIDTH);
       this.leftMiniCube.setMatrixAt(index, leftMiniTransform);
 
       const rightMiniTransform = new THREE.Matrix4()
-        .makeScale(WALL_DEPTH, MINI_HEIGHT, MINI_WIDTH)
+        .makeScale(1, MINI_HEIGHT, MINI_WIDTH)
+        .multiply(new THREE.Matrix4().makeRotationY(Math.PI / 2))
         .setPosition(
-          -WALL_DEPTH / 2,
+          0,
           ARCH_HEIGHT - MINI_HEIGHT / 2,
           (-ARCH_WIDTH + MINI_WIDTH) / 2 + -relativePosition * TOTAL_WIDTH,
         );
@@ -166,30 +159,28 @@ export class ArchGroup implements EntityState, LayoutEntity, TorchEntity {
 
       // Tunnel inside of the arch
       const leftInsideTransform = new THREE.Matrix4()
-        .makeScale(INSIDE_DEPTH - WALL_DEPTH, ARCH_HEIGHT, WALL_DEPTH)
+        .makeScale(INSIDE_DEPTH - WALL_DEPTH, ARCH_HEIGHT, 1)
+        .multiply(new THREE.Matrix4().makeRotationY(Math.PI))
         .setPosition(
           -WALL_DEPTH / 2 - (INSIDE_DEPTH - WALL_DEPTH) / 2,
           ARCH_HEIGHT / 2,
-          ARCH_WIDTH / 2 + WALL_DEPTH / 2 + -relativePosition * TOTAL_WIDTH,
+          ARCH_WIDTH / 2 + -relativePosition * TOTAL_WIDTH,
         );
       this.leftInsideWall.setMatrixAt(index, leftInsideTransform);
 
       const rightInsideTransform = new THREE.Matrix4()
-        .makeScale(INSIDE_DEPTH - WALL_DEPTH, ARCH_HEIGHT, WALL_DEPTH)
+        .makeScale(INSIDE_DEPTH - WALL_DEPTH, ARCH_HEIGHT, 1)
         .setPosition(
           -WALL_DEPTH / 2 - (INSIDE_DEPTH - WALL_DEPTH) / 2,
           ARCH_HEIGHT / 2,
-          -ARCH_WIDTH / 2 - WALL_DEPTH / 2 + -relativePosition * TOTAL_WIDTH,
+          -ARCH_WIDTH / 2 + -relativePosition * TOTAL_WIDTH,
         );
       this.rightInsideWall.setMatrixAt(index, rightInsideTransform);
 
       const topInsideTransform = new THREE.Matrix4()
-        .makeScale(INSIDE_DEPTH - WALL_DEPTH, WALL_DEPTH, ARCH_WIDTH)
-        .setPosition(
-          -WALL_DEPTH / 2 - (INSIDE_DEPTH - WALL_DEPTH) / 2,
-          ARCH_HEIGHT + WALL_DEPTH / 2,
-          -relativePosition * TOTAL_WIDTH,
-        );
+        .makeScale(INSIDE_DEPTH - WALL_DEPTH, 1, ARCH_WIDTH)
+        .multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2))
+        .setPosition(-WALL_DEPTH / 2 - (INSIDE_DEPTH - WALL_DEPTH) / 2, ARCH_HEIGHT, -relativePosition * TOTAL_WIDTH);
       this.topInsideWall.setMatrixAt(index, topInsideTransform);
 
       // Torches

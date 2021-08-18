@@ -1,14 +1,14 @@
 import { Entity, EntityState } from 'engine/entity';
 import { TOTAL_WIDTH, WALL_DEPTH, WALL_HEIGHT, WALL_SCALE } from '../Constants';
-import * as THREE from 'three';
 import { LayoutEntity, TorchEntity } from './LayoutEntity';
+import * as THREE from 'three';
 
 export interface BlankWallProps {
   relativePosition: number;
 }
 
 // Static data storage
-const BOX_GEOMETRY = new THREE.BoxGeometry(1, 1, 1);
+const PLANE_GEOMETRY = new THREE.PlaneGeometry();
 const BLANK_WALL_MATERIAL = new THREE.MeshStandardMaterial();
 const TORCH_MATERIAL = new THREE.MeshStandardMaterial();
 
@@ -45,11 +45,11 @@ export class BlankWallGroup implements EntityState, LayoutEntity, TorchEntity {
     BLANK_WALL_MATERIAL.aoMap = this.buildWallTexture('BrickOcclusion');
 
     // Create all of the instanced meshes
-    this.wall = new THREE.InstancedMesh(BOX_GEOMETRY, BLANK_WALL_MATERIAL, this.entries.length);
+    this.wall = new THREE.InstancedMesh(PLANE_GEOMETRY, BLANK_WALL_MATERIAL, this.entries.length);
 
     const torch: THREE.Mesh = this.entity.area.game.assets.getObject('WallTorch') as THREE.Mesh;
     TORCH_MATERIAL.copy(torch.material as THREE.MeshStandardMaterial);
-    this.torch = new THREE.InstancedMesh(torch.geometry, TORCH_MATERIAL, this.entries.length * 2);
+    this.torch = new THREE.InstancedMesh(torch.geometry, TORCH_MATERIAL, this.entries.length);
 
     this.entity.object.add(this.wall, this.torch);
 
@@ -57,8 +57,9 @@ export class BlankWallGroup implements EntityState, LayoutEntity, TorchEntity {
     for (const [index, { relativePosition }] of this.entries.entries()) {
       // The wall object
       const wallTransform = new THREE.Matrix4()
-        .makeScale(WALL_DEPTH, WALL_HEIGHT, TOTAL_WIDTH)
-        .setPosition(-WALL_DEPTH / 2, WALL_HEIGHT / 2, -relativePosition * TOTAL_WIDTH);
+        .makeScale(1, WALL_HEIGHT, TOTAL_WIDTH)
+        .multiply(new THREE.Matrix4().makeRotationY(Math.PI / 2))
+        .setPosition(0, WALL_HEIGHT / 2, -relativePosition * TOTAL_WIDTH);
       this.wall.setMatrixAt(index, wallTransform);
 
       // Torch
