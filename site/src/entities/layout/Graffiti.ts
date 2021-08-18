@@ -36,14 +36,12 @@ const DEFAULT_TEXTURE_WIDTH = 10;
 const NORMAL_SCALE_FACTOR = 2;
 
 const ALL_FONTS: string[] = [
-  '08 Underground',
+  'Underground',
   'A Another Tag',
   'A Attack Graffiti',
   'A Dripping Marker',
   'Barrio Rifa',
   'Bopollux',
-  'Bored Schoolboy',
-  'Dark Font',
   'DJ Gross',
   'Elevenoone',
   'Gang Bang Crime',
@@ -55,7 +53,6 @@ const ALL_FONTS: string[] = [
   'Pixel Retro SP',
   'Real Breakerz',
   'Reskagraf',
-  'Souper 3',
   'Street Style',
 ];
 
@@ -69,7 +66,7 @@ export class Graffiti implements EntityState, LayoutEntity {
   private relativePosition: number;
   private graffitiProps: GraffitiProps;
 
-  private graffitiPlane: THREE.Mesh;
+  private index: number;
   private angle = 0;
 
   // Internal resources that must be freed:
@@ -78,8 +75,9 @@ export class Graffiti implements EntityState, LayoutEntity {
   private normalCanvas: HTMLCanvasElement;
   private graffitiMaterial: THREE.MeshStandardMaterial;
 
-  constructor(relativePosition = 0, props: GraffitiProps = {}) {
+  constructor(relativePosition = 0, index: number, props: GraffitiProps = {}) {
     this.relativePosition = relativePosition;
+    this.index = index;
     this.graffitiProps = props;
   }
 
@@ -112,8 +110,7 @@ export class Graffiti implements EntityState, LayoutEntity {
     const graffitiPlane = new THREE.Mesh(PLANE_GEOMETRY, this.graffitiMaterial);
     graffitiPlane.position.set(0.0, CENTER_TEXT_Y, -this.relativePosition * TOTAL_WIDTH);
     graffitiPlane.rotation.set(0, Math.PI / 2, 0);
-    this.graffitiPlane = graffitiPlane;
-    this.entity.object.add(graffitiPlane);
+    this.entity.object = graffitiPlane;
   }
 
   /**
@@ -123,8 +120,8 @@ export class Graffiti implements EntityState, LayoutEntity {
    */
   private refreshGraffiti(width = DEFAULT_TEXTURE_WIDTH) {
     const relativeHeight = width * (this.textTexture.height / this.textTexture.width);
-    this.graffitiPlane.scale.set(width, relativeHeight, 1);
-    this.graffitiPlane.rotation.x = this.angle;
+    this.entity.object.scale.set(width, relativeHeight, 1);
+    this.entity.object.rotation.x = this.angle;
 
     this.refreshGraffitiNormalsTexture(width, relativeHeight);
   }

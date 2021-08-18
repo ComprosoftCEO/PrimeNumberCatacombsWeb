@@ -54,7 +54,7 @@ module.exports = {
         type: 'asset/resource',
       },
       {
-        test: /\.(ttf|otf)$/i,
+        test: /\.(ttf|otf|woff|woff2|eot)$/i,
         type: 'asset/resource',
       },
     ],

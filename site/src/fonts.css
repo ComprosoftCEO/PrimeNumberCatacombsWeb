@@ -1,5 +1,5 @@
 @font-face {
-  font-family: '08 Underground';
+  font-family: 'Underground';
   src: url(assets/fonts/08-underground.ttf);
 }
 
@@ -26,16 +26,6 @@
 @font-face {
   font-family: 'Bopollux';
   src: url(assets/fonts/bopollux.ttf);
-}
-
-@font-face {
-  font-family: 'Bored Schoolboy';
-  src: url(assets/fonts/bored-schoolboy.ttf);
-}
-
-@font-face {
-  font-family: 'Dark Font';
-  src: url(assets/fonts/dak_font.ttf);
 }
 
 @font-face {
@@ -91,11 +81,6 @@
 @font-face {
   font-family: 'Reskagraf';
   src: url(assets/fonts/reskagraf.ttf);
-}
-
-@font-face {
-  font-family: 'Souper 3';
-  src: url(assets/fonts/souper-3.ttf);
 }
 
 @font-face {
