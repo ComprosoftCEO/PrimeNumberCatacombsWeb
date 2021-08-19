@@ -2,19 +2,18 @@ import { Area, AreaState } from 'engine/area';
 import { Entity } from 'engine/entity';
 import { AudioWrapper } from 'engine/audio';
 import { MouseButton } from 'engine/input';
+import { randomInt, shuffleArray } from 'engine/helpers';
 import { computeCatacombs } from 'prime-number-catacombs';
 import { DoorSelectorArea } from './DoorSelectorArea';
 import { FadeInEffect } from 'entities/effects/FadeInEffect';
 import { MazeCamera } from 'entities/MazeCamera';
 import { MazeFloor } from 'entities/layout/MazeFloor';
 import { ArchGroup, ArchProps } from 'entities/layout/ArchGroup';
-import { BlankWall } from 'entities/unused/BlankWall';
 import { Side, SideWall } from 'entities/layout/SideWall';
 import { LayoutEntity, TorchEntity } from 'entities/layout/LayoutEntity';
-import * as seededRandom from 'seedrandom';
-import { randomInt, shuffleArray } from 'engine/helpers';
 import { BlankWallGroup, BlankWallProps } from 'entities/layout/BlankWallGroup';
 import { Graffiti } from 'entities/layout/Graffiti';
+import * as seededRandom from 'seedrandom';
 
 interface CatacombNumber {
   value: string;
@@ -33,7 +32,7 @@ interface BlankWallEntry {
   showGraffiti: boolean;
 }
 
-const GRAFFITI_PROBABILITY = 0.6;
+const GRAFFITI_PROBABILITY = 0.4;
 
 /**
  * Main area of the game
@@ -148,7 +147,9 @@ export class MainArea implements AreaState, DoorSelectorArea {
 
     // Add all of the graffiti walls
     for (const [index, { relativePosition }] of allEntries.filter(({ showGraffiti }) => showGraffiti).entries()) {
-      this.area.createEntity(new Graffiti(relativePosition, index));
+      this.area.createEntity(
+        new Graffiti(relativePosition, { seed: `${this.catacombNumber.value}-Graffiti-${index}` }),
+      );
     }
 
     // Add a blank wall if there are no numbers
