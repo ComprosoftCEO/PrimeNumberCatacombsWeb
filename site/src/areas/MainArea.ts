@@ -12,7 +12,7 @@ import { ArchGroup, ArchProps } from 'entities/layout/ArchGroup';
 import { Side, SideWall } from 'entities/layout/SideWall';
 import { LayoutEntity, TorchEntity } from 'entities/layout/LayoutEntity';
 import { BlankWallGroup, BlankWallProps } from 'entities/layout/BlankWallGroup';
-import { Graffiti } from 'entities/layout/Graffiti';
+import { BuiltInFont, Graffiti, GraffitiProps } from 'entities/layout/Graffiti';
 import * as seededRandom from 'seedrandom';
 
 interface CatacombNumber {
@@ -33,6 +33,17 @@ interface BlankWallEntry {
 }
 
 const GRAFFITI_PROBABILITY = 0.4;
+
+const DEAD_END_GRAFFITI: GraffitiProps = {
+  text: 'Dead End',
+  font: {
+    fontFamily: BuiltInFont.ADrippingMarker,
+    fontSize: 96,
+    alignment: 'center',
+    color: '#550000',
+  },
+  angle: 0,
+};
 
 /**
  * Main area of the game
@@ -155,6 +166,7 @@ export class MainArea implements AreaState, DoorSelectorArea {
     // Add a blank wall if there are no numbers
     if (this.entries.length === 0) {
       this.area.createEntity(new BlankWallGroup([{ relativePosition: 0 }]));
+      this.area.createEntity(new Graffiti(0, DEAD_END_GRAFFITI));
     }
 
     // Left and right side walls
