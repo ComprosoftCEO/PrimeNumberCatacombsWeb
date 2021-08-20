@@ -87,7 +87,7 @@ export class MazeCamera implements EntityState {
   }
 
   // Test if the camera is currently moving
-  private get isMoving(): boolean {
+  public get isMoving(): boolean {
     return this.movingTick !== 0;
   }
 

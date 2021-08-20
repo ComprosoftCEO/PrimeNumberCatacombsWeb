@@ -1,4 +1,9 @@
 @font-face {
+  font-family: 'Special Elite';
+  src: url(assets/fonts/special-elite.ttf);
+}
+
+@font-face {
   font-family: 'Underground';
   src: url(assets/fonts/08-underground.ttf);
 }

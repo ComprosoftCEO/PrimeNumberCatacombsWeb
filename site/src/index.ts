@@ -1,6 +1,6 @@
 import { Game } from 'engine/game';
 import { DEFAULT_ERROR_HANDLER, DEFAULT_PROGRESS_HANDLER } from 'engine/assets';
-import { MainArea } from 'areas/MainArea';
+import { TitleArea } from 'areas/TitleArea';
 import './styles.css';
 
 // Textures
@@ -44,7 +44,7 @@ const game = new Game(gameCanvas, overlayCanvas);
 overlayCanvas.width = overlayCanvas.clientWidth;
 overlayCanvas.height = overlayCanvas.clientHeight;
 const g2d = overlayCanvas.getContext('2d');
-g2d.font = '12pt sans-serif';
+g2d.font = '12pt "Special Elite"';
 g2d.fillStyle = 'white';
 g2d.textAlign = 'center';
 g2d.textBaseline = 'middle';
@@ -68,7 +68,7 @@ game.assets.errorHandler = (input) => {
 
 loadAllAssets(game)
   .then((game) => {
-    game.start(new MainArea('2'));
+    game.start(new TitleArea());
   })
   .catch((error) => {
     console.log('Failed to load assets: ' + error, error.stack);
