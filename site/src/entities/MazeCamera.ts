@@ -62,6 +62,8 @@ export class MazeCamera implements EntityState {
 
   onDestroy(): void {}
 
+  onDispose(): void {}
+
   onStep(): void {
     // Make sure the camera is scaled properly
     this.camera.aspect = this.entity.area.game.canvasWidth / this.entity.area.game.canvasHeight;

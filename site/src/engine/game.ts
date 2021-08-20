@@ -127,6 +127,9 @@ export class Game {
 
     // Build the next area
     if (this.nextArea !== null) {
+      this.currentArea.state.onDispose();
+      this.currentArea._disposeEntities();
+
       this._currentArea = new Area(this, this.nextArea);
       this.nextArea = null;
       this.currentArea.state.onCreate(this.currentArea);

@@ -1,7 +1,6 @@
 import { Entity, EntityState } from 'engine/entity';
 import { RandomFn, pickRandomArray, randomFloat } from 'engine/helpers';
 import { TOTAL_WIDTH, WALL_SCALE } from '../Constants';
-import { LayoutEntity } from './LayoutEntity';
 import TextTexture from '@seregpie/three.text-texture';
 import * as seededRandom from 'seedrandom';
 import * as THREE from 'three';
@@ -153,7 +152,7 @@ const OUTLINE_PROBABILITY = 0.5;
 /**
  * Graffiti that is on top of a blank wall
  */
-export class Graffiti implements EntityState, LayoutEntity {
+export class Graffiti implements EntityState {
   public readonly tags: string[] = ['layout-entity'];
 
   private entity: Entity<this>;
@@ -335,10 +334,12 @@ export class Graffiti implements EntityState, LayoutEntity {
     this.entity.destroy();
   }
 
+  onDestroy(): void {}
+
   /**
-   * Free any unused resources when the wall is destroyed
+   * Free any unused resources when the wall is disposed
    */
-  onDestroy(): void {
+  onDispose(): void {
     this.graffitiMaterial.dispose();
     this.textTexture.dispose();
     this.normalTexture.dispose();

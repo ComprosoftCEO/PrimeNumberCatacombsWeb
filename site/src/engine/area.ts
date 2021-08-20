@@ -12,6 +12,10 @@ export interface AreaState {
   /// Returns the newly created area object for the AreaState to store
   onCreate(area: Area<this>): void;
 
+  /// Always called when the room changes, meant to dispose any resources stored by the area
+  ///  This is NOT responsible for disposing any entity resources
+  onDispose(): void;
+
   onTimer(timerIndex: number): void;
   onStep(): void;
   onDraw(g2d: CanvasRenderingContext2D): void;
@@ -287,6 +291,24 @@ export class Area<State extends AreaState = AreaState> {
     // Call the "onDestroy" event handler for each entity
     for (const entity of toDestroy) {
       entity._destroy();
+    }
+
+    // Call the "onDispose" event handler for each entity
+    for (const entity of toDestroy) {
+      entity._dispose();
+    }
+  }
+
+  /**
+   * Dispose any entity resources when the room is changed.
+   * This does NOT call the "onDestroy()" handler.
+   *
+   * This method is used internally by the game engine and
+   *  should NOT be called directly!
+   */
+  _disposeEntities(): void {
+    for (const entity of this.allEntities) {
+      entity._dispose();
     }
   }
 

@@ -1,5 +1,4 @@
 import { Entity, EntityState } from 'engine/entity';
-import { LayoutEntity } from './LayoutEntity';
 import { CAMERA_DIST_OUT, TOTAL_WIDTH, UNITS_WIDE, WALL_HEIGHT, WALL_SCALE } from '../Constants';
 import * as THREE from 'three';
 
@@ -17,7 +16,7 @@ export enum Side {
 /**
  * Left or right wall along the main area
  */
-export class SideWall implements EntityState, LayoutEntity {
+export class SideWall implements EntityState {
   public readonly tags: string[] = ['layout-entity'];
 
   private entity: Entity<this>;
@@ -82,11 +81,8 @@ export class SideWall implements EntityState, LayoutEntity {
     }
   }
 
-  public dispose(): void {
-    this.entity.destroy();
-  }
-
   onDestroy(): void {}
+  onDispose(): void {}
   onStep(): void {}
   onTimer(_timerIndex: number): void {}
   onDraw(_g2d: CanvasRenderingContext2D): void {}

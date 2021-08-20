@@ -1,5 +1,4 @@
 import { Entity, EntityState } from 'engine/entity';
-import { LayoutEntity } from './LayoutEntity';
 import { INSIDE_DEPTH, TOTAL_WIDTH } from '../Constants';
 import * as THREE from 'three';
 
@@ -10,7 +9,7 @@ const FLOOR_SCALE = 6;
 /**
  * Represents the floor in the maze
  */
-export class MazeFloor implements EntityState, LayoutEntity {
+export class MazeFloor implements EntityState {
   public readonly tags: string[] = ['layout-entity'];
 
   private entity: Entity<this>;
@@ -52,11 +51,8 @@ export class MazeFloor implements EntityState, LayoutEntity {
     return texture;
   }
 
-  public dispose(): void {
-    this.entity.destroy();
-  }
-
   onDestroy(): void {}
+  onDispose(): void {}
   onStep(): void {}
   onTimer(_timerIndex: number): void {}
   onDraw(_g2d: CanvasRenderingContext2D): void {}

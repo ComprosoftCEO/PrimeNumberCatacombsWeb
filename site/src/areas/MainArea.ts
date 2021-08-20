@@ -10,9 +10,10 @@ import { MazeCamera } from 'entities/MazeCamera';
 import { MazeFloor } from 'entities/layout/MazeFloor';
 import { ArchGroup, ArchProps } from 'entities/layout/ArchGroup';
 import { Side, SideWall } from 'entities/layout/SideWall';
-import { LayoutEntity, TorchEntity } from 'entities/layout/LayoutEntity';
+import { TorchEntity } from 'entities/layout/TorchEntity';
 import { BlankWallGroup, BlankWallProps } from 'entities/layout/BlankWallGroup';
 import { BuiltInFont, Graffiti, GraffitiProps } from 'entities/layout/Graffiti';
+import { DeadEndAnimation } from 'entities/effects/DeadEndAnimation';
 import * as seededRandom from 'seedrandom';
 
 interface CatacombNumber {
@@ -56,7 +57,8 @@ export class MainArea implements AreaState, DoorSelectorArea {
   private allowComposite: boolean;
 
   private entries: Entry[];
-  private ambient: AudioWrapper;
+
+  public ambient: AudioWrapper;
 
   /**
    * Construct a new game area
@@ -167,6 +169,7 @@ export class MainArea implements AreaState, DoorSelectorArea {
     if (this.entries.length === 0) {
       this.area.createEntity(new BlankWallGroup([{ relativePosition: 0 }]));
       this.area.createEntity(new Graffiti(0, DEAD_END_GRAFFITI));
+      this.area.createEntity(new DeadEndAnimation());
     }
 
     // Left and right side walls
@@ -204,28 +207,8 @@ export class MainArea implements AreaState, DoorSelectorArea {
   public enterDoor(index: number): void {
     this.clearArea();
 
-    // Hacky: use the timer index to specify the next room to visit
-    this.area.setTimer(index - this.smallestIndex, 1, false);
-  }
-
-  /**
-   * Clear all of the objects inside the area
-   */
-  private clearArea(): void {
-    // Clear any room resources
-    for (const object of this.area.findEntities('layout-entity') as Entity<LayoutEntity>[]) {
-      object.state.dispose();
-    }
-
-    // Destroy the camera
-    for (const camera of this.area.findEntities('camera')) {
-      camera.destroy();
-    }
-  }
-
-  onTimer(timerIndex: number): void {
     // Go to the next room
-    const entry = this.entries[timerIndex];
+    const entry = this.entries[index - this.smallestIndex];
     if (typeof entry !== 'undefined' && entry.isArchway) {
       this.catacombNumber = entry.catacombNumber;
     } else {
@@ -236,6 +219,25 @@ export class MainArea implements AreaState, DoorSelectorArea {
     this.computeEntries();
     this.buildArea();
   }
+
+  /**
+   * Clear all of the objects inside the area
+   */
+  private clearArea(): void {
+    // Clear any room resources
+    for (const entity of this.area.findEntities('layout-entity')) {
+      entity.destroy();
+    }
+
+    // Destroy the camera
+    for (const camera of this.area.findEntities('camera')) {
+      camera.destroy();
+    }
+  }
+
+  onDispose(): void {}
+
+  onTimer(_timerIndex: number): void {}
 
   onStep(): void {
     // Fix for audio playing

@@ -2,7 +2,7 @@ import { Area, AreaState } from 'engine/area';
 import { Entity } from 'engine/entity';
 import { FadeInEffect } from 'entities/effects/FadeInEffect';
 import { ArchGroup } from 'entities/layout/ArchGroup';
-import { LayoutEntity, TorchEntity } from 'entities/layout/LayoutEntity';
+import { TorchEntity } from 'entities/layout/TorchEntity';
 import { MazeFloor } from 'entities/layout/MazeFloor';
 import { MazeCamera } from 'entities/MazeCamera';
 import { DoorSelectorArea } from './DoorSelectorArea';
@@ -10,7 +10,6 @@ import { MainArea } from './MainArea';
 
 enum Timer {
   TestForMovement,
-  GoToNextArea,
 }
 
 /**
@@ -51,13 +50,10 @@ export class TitleArea implements AreaState, DoorSelectorArea {
    * Action fired when the door is entered
    */
   enterDoor(_index: number): void {
-    // Clear any room resources
-    for (const object of this.area.findEntities('layout-entity') as Entity<LayoutEntity>[]) {
-      object.state.dispose();
-    }
-
-    this.area.setTimer(Timer.GoToNextArea, 1, false);
+    this.area.game.setArea(new MainArea('2'));
   }
+
+  onDispose(): void {}
 
   onTimer(timerIndex: number): void {
     switch (timerIndex) {
@@ -66,10 +62,6 @@ export class TitleArea implements AreaState, DoorSelectorArea {
         if (this.camera.isMoving) {
           this.hideText = true;
         }
-        break;
-
-      case Timer.GoToNextArea:
-        this.area.game.setArea(new MainArea('2'));
         break;
     }
   }

@@ -14,7 +14,12 @@ export interface EntityState {
   /// Returns the newly created entity for the EntityState to store
   onCreate(entity: Entity<this>): void;
 
+  /// Only called if the entity is explicitly destroyed
   onDestroy(): void;
+
+  /// Always called, either when an entity is destroyed or the room is changed
+  onDispose(): void;
+
   onStep(): void;
   onTimer(timerIndex: number): void;
   onDraw(g2d: CanvasRenderingContext2D): void;
@@ -143,6 +148,16 @@ export class Entity<State extends EntityState = EntityState> {
     if (this._object !== null) {
       this.area.scene.remove(this._object);
     }
+  }
+
+  /**
+   * Run the onDispose() event handler.
+   *
+   * This method is used internally by the game engine and
+   *  should NOT be called directly!
+   */
+  _dispose(): void {
+    this.state.onDispose();
   }
 
   /**

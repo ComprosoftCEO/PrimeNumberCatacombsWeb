@@ -1,6 +1,6 @@
 import { Entity, EntityState } from 'engine/entity';
 import { TOTAL_WIDTH, WALL_DEPTH, WALL_HEIGHT, WALL_SCALE } from '../Constants';
-import { LayoutEntity, TorchEntity } from './LayoutEntity';
+import { TorchEntity } from './TorchEntity';
 import * as THREE from 'three';
 
 export interface BlankWallProps {
@@ -17,7 +17,7 @@ const TORCH_MATERIAL = new THREE.MeshStandardMaterial();
  *
  * Be sure to destroy this entity before moving to another room, or there will be a memory leak!
  */
-export class BlankWallGroup implements EntityState, LayoutEntity, TorchEntity {
+export class BlankWallGroup implements EntityState, TorchEntity {
   public readonly tags: string[] = ['layout-entity', 'torch-entity'];
 
   private entity: Entity<this>;
@@ -124,10 +124,9 @@ export class BlankWallGroup implements EntityState, LayoutEntity, TorchEntity {
     this.torchLights.forEach((torches) => torches.forEach((torch) => (torch.intensity = brightness)));
   }
 
-  /**
-   * Dispose of all resources
-   */
-  onDestroy(): void {
+  onDestroy(): void {}
+
+  onDispose(): void {
     this.wall.dispose();
     this.torch.dispose();
   }

@@ -1,6 +1,6 @@
 import { Entity, EntityState } from 'engine/entity';
 import { WALL_SCALE, UNITS_WIDE, TOTAL_WIDTH, WALL_HEIGHT, WALL_DEPTH, INSIDE_DEPTH } from '../Constants';
-import { LayoutEntity, TorchEntity } from './LayoutEntity';
+import { TorchEntity } from './TorchEntity';
 import * as THREE from 'three';
 
 /// Defines how a single archway looks
@@ -34,7 +34,7 @@ const FONT_MATERIAL = new THREE.MeshStandardMaterial({ color: 0x705024 });
  *
  * Be sure to destroy this entity before moving to another room, or there will be a memory leak!
  */
-export class ArchGroup implements EntityState, LayoutEntity, TorchEntity {
+export class ArchGroup implements EntityState, TorchEntity {
   public readonly tags: string[] = ['layout-entity', 'torch-entity'];
 
   private entity: Entity<this>;
@@ -364,10 +364,9 @@ export class ArchGroup implements EntityState, LayoutEntity, TorchEntity {
     this.torchLights.forEach((torches) => torches.forEach((torch) => (torch.intensity = brightness)));
   }
 
-  /**
-   * Dispose of all resources
-   */
-  onDestroy(): void {
+  onDestroy(): void {}
+
+  onDispose(): void {
     this.leftSideWall.dispose();
     this.rightSideWall.dispose();
     this.topWall.dispose();
