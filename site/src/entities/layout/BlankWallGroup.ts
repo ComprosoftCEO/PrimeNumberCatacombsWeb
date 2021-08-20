@@ -120,7 +120,7 @@ export class BlankWallGroup implements EntityState, TorchEntity {
     rightTorches.forEach((torch) => (torch.visible = true));
   }
 
-  public setTorchBrightness(brightness: number): void {
+  public setTorchIntensity(brightness: number): void {
     this.torchLights.forEach((torches) => torches.forEach((torch) => (torch.intensity = brightness)));
   }
 

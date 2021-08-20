@@ -14,6 +14,7 @@ import { TorchEntity } from 'entities/layout/TorchEntity';
 import { BlankWallGroup, BlankWallProps } from 'entities/layout/BlankWallGroup';
 import { BuiltInFont, Graffiti, GraffitiProps } from 'entities/layout/Graffiti';
 import { DeadEndAnimation } from 'entities/effects/DeadEndAnimation';
+import { TorchTimer } from 'entities/effects/TorchTimer';
 import * as seededRandom from 'seedrandom';
 
 interface CatacombNumber {
@@ -57,7 +58,9 @@ export class MainArea implements AreaState, DoorSelectorArea {
   private allowComposite: boolean;
 
   private entries: Entry[];
+  private torchTimer: TorchTimer;
 
+  public camera: MazeCamera;
   public ambient: AudioWrapper;
 
   /**
@@ -92,6 +95,10 @@ export class MainArea implements AreaState, DoorSelectorArea {
     // Initialize the room
     this.computeEntries();
     this.buildArea();
+
+    // Create entity to fade the torches
+    this.torchTimer = new TorchTimer();
+    this.area.createEntity(this.torchTimer);
 
     // Start the creepy ambient noise
     this.ambient = this.area.createAudio('Ambient');
@@ -178,7 +185,8 @@ export class MainArea implements AreaState, DoorSelectorArea {
 
     // Build the camera, start in a random location
     const prng = seededRandom(`${this.catacombNumber.value}-Start`);
-    this.area.createEntity(new MazeCamera(randomInt(this.smallestIndex, this.largestIndex, prng)));
+    this.camera = new MazeCamera(randomInt(this.smallestIndex, this.largestIndex, prng));
+    this.area.createEntity(this.camera);
 
     // Fade-in effect
     this.area.createEntity(new FadeInEffect());
@@ -216,6 +224,7 @@ export class MainArea implements AreaState, DoorSelectorArea {
       this.catacombNumber.isPrime = false;
     }
 
+    this.torchTimer.enteredDoor();
     this.computeEntries();
     this.buildArea();
   }
