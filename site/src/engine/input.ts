@@ -486,6 +486,22 @@ export class InputManager {
   }
 
   /**
+   * Get the list of connected gamepads, might be empty
+   */
+  public getConnectedGamepads(): number[] {
+    return Object.keys(this.gamepadState)
+      .map(Number)
+      .filter((key) => !Number.isNaN(key));
+  }
+
+  /**
+   * Test if a given gamepad is connected
+   */
+  public isGamepadConnected(gamepad: number): boolean {
+    return typeof this.gamepadState[gamepad] !== 'undefined';
+  }
+
+  /**
    * Test if a button has just been pressed down on a gamepad.
    * Only returns true during this tick, and then the event is cleared.
    */
