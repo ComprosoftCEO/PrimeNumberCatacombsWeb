@@ -16,13 +16,17 @@ struct Opt {
   #[structopt(short, long, default_value = "2")]
   base: u8,
 
+  /// Hamming distance for search (1..)
+  #[structopt(short, long, default_value = "1")]
+  hamming_distance: usize,
+
   /// Maximum number of search iterations
   #[structopt(short, long, default_value = "1000")]
   iterations: u64,
 }
 
 pub fn main() {
-  let opt = Opt::from_args();
+  let opt: Opt = Opt::from_args();
 
   println!("Start: {} (Level 0)", opt.start);
 
@@ -38,7 +42,7 @@ pub fn main() {
     }
 
     let (current_number, indentation) = entry.unwrap();
-    for number in CatacombNumber::compute_catacombs(&current_number, opt.base)
+    for number in CatacombNumber::compute_catacombs(&current_number, opt.base, opt.hamming_distance)
       .into_iter()
       .filter(CatacombNumber::is_prime)
       .map(CatacombNumber::into_value)
